@@ -26,6 +26,30 @@ func NewCampaignSvc(repo repositories.CampaignRepo, cateRepo repositories.Catego
 	}
 }
 
+func (svc *campaignSvc) FindCampaignByUser(ctx context.Context, userAddress string) *views.Response {
+	campaigns, err := svc.repo.FindCampaignByUser(ctx, userAddress)
+	if err != nil {
+		return views.ErrorResponse(http.StatusInternalServerError, views.M_INTERNAL_SERVER_ERROR, err)
+	}
+
+	resp := make([]views.FindAllCampaigns, len(campaigns))
+	for i, campaign := range campaigns {
+		r := views.FindAllCampaigns{
+			Address:      campaign.Address,
+			CreatedAt:    campaign.CreatedAt.Unix(),
+			OwnerAddress: campaign.OwnerAddress,
+			Title:        campaign.Title,
+			Description:  campaign.Description,
+			CategoryId:   campaign.CategoryId,
+			Status:       campaign.Status,
+			Banner:       campaign.Banner,
+			Delisted:     campaign.Delisted,
+		}
+		resp[i] = r
+	}
+	return views.SuccessResponse(http.StatusOK, views.M_OK, resp)
+}
+
 func (svc *campaignSvc) CreateCampaign(ctx context.Context, params *params.CreateCampaign) *views.Response {
 	pubkey, err := solana.PublicKeyFromBase58(params.Address)
 	if err != nil {

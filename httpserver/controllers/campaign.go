@@ -17,6 +17,10 @@ func NewCampaignController(svc services.CampaignSvc) *CampaignController {
 		svc: svc,
 	}
 }
+func (control *CampaignController) FindCampaignByUser(ctx *gin.Context) {
+	response := control.svc.FindCampaignByUser(ctx, ctx.Param("userAddress"))
+	WriteJsonResponse(ctx, response)
+}
 
 func (control *CampaignController) CreateCampaign(ctx *gin.Context) {
 	var req params.CreateCampaign

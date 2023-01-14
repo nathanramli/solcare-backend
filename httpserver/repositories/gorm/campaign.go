@@ -28,3 +28,12 @@ func (r *campaignRepo) FindCampaignById(ctx context.Context, address string) (*m
 	err := r.db.WithContext(ctx).Where("address = ?", address).Take(campaign).Error
 	return campaign, err
 }
+
+func (r *campaignRepo) FindCampaignByUser(ctx context.Context, userAddress string) ([]models.Campaign, error) {
+	var campaigns []models.Campaign
+
+	if err := r.db.WithContext(ctx).Find(&campaigns).Where("owner_address = ?", userAddress).Error; err != nil {
+		return campaigns, err
+	}
+	return campaigns, nil
+}
