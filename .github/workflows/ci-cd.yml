@@ -8,7 +8,6 @@ on:
 
 jobs:
   build:
-    needs: run_test
     name: Build Package
     runs-on: ubuntu-latest
     steps:
