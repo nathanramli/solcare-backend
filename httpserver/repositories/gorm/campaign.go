@@ -5,7 +5,6 @@ import (
 	"github.com/nathanramli/solcare-backend/httpserver/repositories"
 	"github.com/nathanramli/solcare-backend/httpserver/repositories/models"
 	"gorm.io/gorm"
-	"time"
 )
 
 type campaignRepo struct {
@@ -18,9 +17,8 @@ func NewCampaignRepo(db *gorm.DB) repositories.CampaignRepo {
 	}
 }
 
-func (r *campaignRepo) CreateCampaign(ctx context.Context, campaign *models.Campaign) error {
-	campaign.CreatedAt = time.Now()
-	return r.db.WithContext(ctx).Create(campaign).Error
+func (r *campaignRepo) SaveCampaign(ctx context.Context, campaign *models.Campaign) error {
+	return r.db.WithContext(ctx).Save(campaign).Error
 }
 
 func (r *campaignRepo) FindCampaignById(ctx context.Context, address string) (*models.Campaign, error) {

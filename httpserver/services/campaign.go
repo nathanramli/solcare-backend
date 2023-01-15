@@ -4,7 +4,9 @@ import (
 	"context"
 	"errors"
 	"github.com/gagliardetto/solana-go"
+	"github.com/gagliardetto/solana-go/rpc"
 	"github.com/gin-gonic/gin"
+	"github.com/nathanramli/solcare-backend/config"
 	"github.com/nathanramli/solcare-backend/httpserver/controllers/params"
 	"github.com/nathanramli/solcare-backend/httpserver/controllers/views"
 	"github.com/nathanramli/solcare-backend/httpserver/repositories"
@@ -12,6 +14,7 @@ import (
 	"gorm.io/gorm"
 	"net/http"
 	"strings"
+	"time"
 )
 
 type campaignSvc struct {
@@ -56,6 +59,15 @@ func (svc *campaignSvc) CreateCampaign(ctx context.Context, params *params.Creat
 		return views.ErrorResponse(http.StatusBadRequest, views.M_BAD_REQUEST, err)
 	}
 
+	acc, err := config.RpcClient.GetAccountInfo(ctx, pubkey)
+	if err != nil && err != rpc.ErrNotFound {
+		return views.ErrorResponse(http.StatusInternalServerError, views.M_INTERNAL_SERVER_ERROR, err)
+	}
+
+	if acc != nil {
+		return views.ErrorResponse(http.StatusBadRequest, views.M_BAD_REQUEST, errors.New("campaign already exist"))
+	}
+
 	_, err = solana.PublicKeyFromBase58(params.OwnerAddress)
 	if err != nil {
 		return views.ErrorResponse(http.StatusBadRequest, views.M_BAD_REQUEST, err)
@@ -69,19 +81,13 @@ func (svc *campaignSvc) CreateCampaign(ctx context.Context, params *params.Creat
 		return views.ErrorResponse(http.StatusInternalServerError, views.M_INTERNAL_SERVER_ERROR, err)
 	}
 
-	_, err = svc.repo.FindCampaignById(ctx, params.Address)
-	if err != nil && err != gorm.ErrRecordNotFound {
-		return views.ErrorResponse(http.StatusInternalServerError, views.M_INTERNAL_SERVER_ERROR, err)
-	} else if err == nil {
-		return views.ErrorResponse(http.StatusBadRequest, views.M_BAD_REQUEST, errors.New("campaign already exist"))
-	}
-
-	err = svc.repo.CreateCampaign(ctx, &models.Campaign{
+	err = svc.repo.SaveCampaign(ctx, &models.Campaign{
 		Title:        params.Title,
 		Description:  params.Description,
 		Address:      params.Address,
 		OwnerAddress: params.OwnerAddress,
 		CategoryId:   params.CategoryId,
+		CreatedAt:    time.Now(),
 	})
 	if err != nil {
 		return views.ErrorResponse(http.StatusInternalServerError, views.M_INTERNAL_SERVER_ERROR, err)
