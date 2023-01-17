@@ -13,6 +13,7 @@ import (
 	"github.com/nathanramli/solcare-backend/httpserver/repositories/models"
 	"gorm.io/gorm"
 	"net/http"
+	"strconv"
 	"strings"
 	"time"
 )
@@ -53,7 +54,7 @@ func (svc *campaignSvc) FindCampaignByUser(ctx context.Context, userAddress stri
 	return views.SuccessResponse(http.StatusOK, views.M_OK, resp)
 }
 
-func (svc *campaignSvc) FindAllCampaign(ctx context.Context, order string, offset int) *views.Response {
+func (svc *campaignSvc) FindAllCampaign(ctx context.Context, order string, categoryId int, search string, offset int) *views.Response {
 	orders := make([]string, 0)
 	if order == "newest" {
 		orders = append(orders, "created_at asc")
@@ -64,7 +65,19 @@ func (svc *campaignSvc) FindAllCampaign(ctx context.Context, order string, offse
 		orders = append(orders, "created_at desc")
 	}
 
-	campaigns, err := svc.repo.FindAllCampaign(ctx, orders, 20, offset)
+	filters := ""
+	if categoryId != 0 {
+		filters += "category_id = '" + strconv.Itoa(categoryId) + "'"
+	}
+
+	if search != "" {
+		if filters != "" {
+			filters += " AND "
+		}
+		filters += "LOWER(title) LIKE '%" + strings.ToLower(search) + "%'"
+	}
+
+	campaigns, err := svc.repo.FindAllCampaign(ctx, orders, 20, offset, filters)
 	if err != nil {
 		return views.ErrorResponse(http.StatusInternalServerError, views.M_INTERNAL_SERVER_ERROR, err)
 	}

@@ -14,7 +14,7 @@ type UserSvc interface {
 type CampaignSvc interface {
 	CreateCampaign(ctx context.Context, campaign *params.CreateCampaign) *views.Response
 	FindCampaignByUser(ctx context.Context, userAddress string) *views.Response
-	FindAllCampaign(ctx context.Context, order string, offset int) *views.Response
+	FindAllCampaign(ctx context.Context, order string, category int, search string, offset int) *views.Response
 }
 
 type CategoriesSvc interface {

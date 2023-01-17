@@ -21,7 +21,10 @@ func NewCampaignController(svc services.CampaignSvc) *CampaignController {
 
 func (control *CampaignController) FindAllCampaign(ctx *gin.Context) {
 	var err error
-	var offset = 0
+	var (
+		offset     = 0
+		categoryId = 0
+	)
 
 	offsetPar, exist := ctx.GetQuery("offset")
 	if exist && offsetPar != "" {
@@ -34,7 +37,18 @@ func (control *CampaignController) FindAllCampaign(ctx *gin.Context) {
 		}
 	}
 
-	response := control.svc.FindAllCampaign(ctx, ctx.Query("order"), offset)
+	categoryPar, exist := ctx.GetQuery("categoryId")
+	if exist && categoryPar != "" {
+		categoryId, err = strconv.Atoi(categoryPar)
+		if err != nil {
+			ctx.AbortWithStatusJSON(http.StatusBadRequest, gin.H{
+				"error": err.Error(),
+			})
+			return
+		}
+	}
+
+	response := control.svc.FindAllCampaign(ctx, ctx.Query("order"), categoryId, ctx.Query("search"), offset)
 	WriteJsonResponse(ctx, response)
 }
 

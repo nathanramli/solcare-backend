@@ -37,12 +37,12 @@ func (r *campaignRepo) FindCampaignByUser(ctx context.Context, userAddress strin
 	return campaigns, nil
 }
 
-func (r *campaignRepo) FindAllCampaign(ctx context.Context, orders []string, limit int, offset int) ([]models.Campaign, error) {
+func (r *campaignRepo) FindAllCampaign(ctx context.Context, orders []string, limit int, offset int, filters string) ([]models.Campaign, error) {
 	var campaigns []models.Campaign
 
 	query := r.db.WithContext(ctx).Limit(limit).Offset(offset)
 
-	if err := query.Order(strings.Join(orders, ", ")).Find(&campaigns).Error; err != nil {
+	if err := query.Order(strings.Join(orders, ", ")).Find(&campaigns, filters).Error; err != nil {
 		return campaigns, err
 	}
 	return campaigns, nil
