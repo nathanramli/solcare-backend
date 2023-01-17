@@ -57,6 +57,11 @@ func (control *CampaignController) FindCampaignByUser(ctx *gin.Context) {
 	WriteJsonResponse(ctx, response)
 }
 
+func (control *CampaignController) FindCampaignByAddress(ctx *gin.Context) {
+	response := control.svc.FindCampaignByAddress(ctx, ctx.Param("address"))
+	WriteJsonResponse(ctx, response)
+}
+
 func (control *CampaignController) CreateCampaign(ctx *gin.Context) {
 	var req params.CreateCampaign
 	err := ctx.ShouldBind(&req)

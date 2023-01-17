@@ -22,7 +22,7 @@ func (r *campaignRepo) SaveCampaign(ctx context.Context, campaign *models.Campai
 	return r.db.WithContext(ctx).Save(campaign).Error
 }
 
-func (r *campaignRepo) FindCampaignById(ctx context.Context, address string) (*models.Campaign, error) {
+func (r *campaignRepo) FindCampaignByAddress(ctx context.Context, address string) (*models.Campaign, error) {
 	campaign := new(models.Campaign)
 	err := r.db.WithContext(ctx).Where("address = ?", address).Take(campaign).Error
 	return campaign, err

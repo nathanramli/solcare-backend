@@ -46,12 +46,34 @@ func (svc *campaignSvc) FindCampaignByUser(ctx context.Context, userAddress stri
 			Description:  campaign.Description,
 			CategoryId:   campaign.CategoryId,
 			Status:       campaign.Status,
-			Banner:       campaign.Banner,
+			Banner:       "resources/" + campaign.Banner,
 			Delisted:     campaign.Delisted,
 		}
 		resp[i] = r
 	}
 	return views.SuccessResponse(http.StatusOK, views.M_OK, resp)
+}
+
+func (svc *campaignSvc) FindCampaignByAddress(ctx context.Context, address string) *views.Response {
+	campaign, err := svc.repo.FindCampaignByAddress(ctx, address)
+	if err != nil {
+		if err == gorm.ErrRecordNotFound {
+			return views.ErrorResponse(http.StatusBadRequest, views.M_BAD_REQUEST, err)
+		}
+		return views.ErrorResponse(http.StatusInternalServerError, views.M_INTERNAL_SERVER_ERROR, err)
+	}
+
+	return views.SuccessResponse(http.StatusOK, views.M_OK, views.FindAllCampaigns{
+		Address:      campaign.Address,
+		CreatedAt:    campaign.CreatedAt.Unix(),
+		OwnerAddress: campaign.OwnerAddress,
+		Title:        campaign.Title,
+		Description:  campaign.Description,
+		CategoryId:   campaign.CategoryId,
+		Status:       campaign.Status,
+		Banner:       "resources/" + campaign.Banner,
+		Delisted:     campaign.Delisted,
+	})
 }
 
 func (svc *campaignSvc) FindAllCampaign(ctx context.Context, order string, categoryId int, search string, offset int) *views.Response {
