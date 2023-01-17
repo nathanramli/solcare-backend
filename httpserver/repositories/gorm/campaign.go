@@ -5,6 +5,7 @@ import (
 	"github.com/nathanramli/solcare-backend/httpserver/repositories"
 	"github.com/nathanramli/solcare-backend/httpserver/repositories/models"
 	"gorm.io/gorm"
+	"strings"
 )
 
 type campaignRepo struct {
@@ -31,6 +32,17 @@ func (r *campaignRepo) FindCampaignByUser(ctx context.Context, userAddress strin
 	var campaigns []models.Campaign
 
 	if err := r.db.WithContext(ctx).Where("owner_address = ?", userAddress).Find(&campaigns).Error; err != nil {
+		return campaigns, err
+	}
+	return campaigns, nil
+}
+
+func (r *campaignRepo) FindAllCampaign(ctx context.Context, orders []string, limit int, offset int) ([]models.Campaign, error) {
+	var campaigns []models.Campaign
+
+	query := r.db.WithContext(ctx).Limit(limit).Offset(offset)
+
+	if err := query.Order(strings.Join(orders, ", ")).Find(&campaigns).Error; err != nil {
 		return campaigns, err
 	}
 	return campaigns, nil

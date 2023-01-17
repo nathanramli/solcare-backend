@@ -17,6 +17,7 @@ type CampaignRepo interface {
 	SaveCampaign(ctx context.Context, campaign *models.Campaign) error
 	FindCampaignById(ctx context.Context, address string) (*models.Campaign, error)
 	FindCampaignByUser(ctx context.Context, userAddress string) ([]models.Campaign, error)
+	FindAllCampaign(ctx context.Context, orders []string, limit int, offset int) ([]models.Campaign, error)
 }
 
 type CategoryRepo interface {

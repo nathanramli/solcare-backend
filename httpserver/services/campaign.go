@@ -53,6 +53,40 @@ func (svc *campaignSvc) FindCampaignByUser(ctx context.Context, userAddress stri
 	return views.SuccessResponse(http.StatusOK, views.M_OK, resp)
 }
 
+func (svc *campaignSvc) FindAllCampaign(ctx context.Context, order string, offset int) *views.Response {
+	orders := make([]string, 0)
+	if order == "newest" {
+		orders = append(orders, "created_at asc")
+	} else if order == "oldest" {
+		orders = append(orders, "created_at desc")
+	} else {
+		// default
+		orders = append(orders, "created_at desc")
+	}
+
+	campaigns, err := svc.repo.FindAllCampaign(ctx, orders, 20, offset)
+	if err != nil {
+		return views.ErrorResponse(http.StatusInternalServerError, views.M_INTERNAL_SERVER_ERROR, err)
+	}
+
+	resp := make([]views.FindAllCampaigns, len(campaigns))
+	for i, campaign := range campaigns {
+		r := views.FindAllCampaigns{
+			Address:      campaign.Address,
+			CreatedAt:    campaign.CreatedAt.Unix(),
+			OwnerAddress: campaign.OwnerAddress,
+			Title:        campaign.Title,
+			Description:  campaign.Description,
+			CategoryId:   campaign.CategoryId,
+			Status:       campaign.Status,
+			Banner:       "resources/" + campaign.Banner,
+			Delisted:     campaign.Delisted,
+		}
+		resp[i] = r
+	}
+	return views.SuccessResponse(http.StatusOK, views.M_OK, resp)
+}
+
 func (svc *campaignSvc) CreateCampaign(ctx context.Context, params *params.CreateCampaign) *views.Response {
 	pubkey, err := solana.PublicKeyFromBase58(params.Address)
 	if err != nil {
@@ -81,22 +115,23 @@ func (svc *campaignSvc) CreateCampaign(ctx context.Context, params *params.Creat
 		return views.ErrorResponse(http.StatusInternalServerError, views.M_INTERNAL_SERVER_ERROR, err)
 	}
 
+	fileNameSplits := strings.Split(params.Banner.Filename, ".")
+	ext := fileNameSplits[len(fileNameSplits)-1]
+
+	err = ctx.(*gin.Context).SaveUploadedFile(params.Banner, "./resources/"+pubkey.String()+"."+ext)
+	if err != nil {
+		return views.ErrorResponse(http.StatusInternalServerError, views.M_INTERNAL_SERVER_ERROR, err)
+	}
+
 	err = svc.repo.SaveCampaign(ctx, &models.Campaign{
 		Title:        params.Title,
 		Description:  params.Description,
 		Address:      params.Address,
 		OwnerAddress: params.OwnerAddress,
 		CategoryId:   params.CategoryId,
+		Banner:       pubkey.String() + "." + ext,
 		CreatedAt:    time.Now(),
 	})
-	if err != nil {
-		return views.ErrorResponse(http.StatusInternalServerError, views.M_INTERNAL_SERVER_ERROR, err)
-	}
-
-	fileNameSplits := strings.Split(params.Banner.Filename, ".")
-	ext := fileNameSplits[len(fileNameSplits)-1]
-
-	err = ctx.(*gin.Context).SaveUploadedFile(params.Banner, "./resources/"+pubkey.String()+"."+ext)
 	if err != nil {
 		return views.ErrorResponse(http.StatusInternalServerError, views.M_INTERNAL_SERVER_ERROR, err)
 	}

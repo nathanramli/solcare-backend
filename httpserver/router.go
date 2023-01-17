@@ -27,12 +27,15 @@ func NewRouter(r *gin.Engine, user *controllers.UserController, campaign *contro
 }
 
 func (r *router) Start(port string) {
+	r.router.Static("/resources/", "./resources")
+
 	r.router.Use(cors)
 	// users
 	r.router.POST("/v1/users/login", r.user.Login)
 
 	r.router.POST("/v1/campaign", r.campaign.CreateCampaign)
 	r.router.GET("/v1/campaign/user/:userAddress", r.campaign.FindCampaignByUser)
+	r.router.GET("/v1/campaign", r.campaign.FindAllCampaign)
 
 	r.router.GET("/v1/categories", r.category.FindAllCategories)
 	r.router.GET("/v1/categories/:categoryId", r.category.FindCategoryById)
