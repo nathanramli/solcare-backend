@@ -79,9 +79,9 @@ func (svc *campaignSvc) FindCampaignByAddress(ctx context.Context, address strin
 func (svc *campaignSvc) FindAllCampaign(ctx context.Context, order string, categoryId int, search string, offset int) *views.Response {
 	orders := make([]string, 0)
 	if order == "newest" {
-		orders = append(orders, "created_at asc")
-	} else if order == "oldest" {
 		orders = append(orders, "created_at desc")
+	} else if order == "oldest" {
+		orders = append(orders, "created_at asc")
 	} else {
 		// default
 		orders = append(orders, "created_at desc")
