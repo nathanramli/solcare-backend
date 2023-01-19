@@ -20,6 +20,11 @@ type CampaignRepo interface {
 	FindAllCampaign(ctx context.Context, orders []string, limit int, offset int, filters string) ([]models.Campaign, error)
 }
 
+type ProposalRepo interface {
+	SaveProposal(ctx context.Context, proposal *models.Proposal) error
+	FindProposalByAddress(ctx context.Context, address string) (*models.Proposal, error)
+}
+
 type CategoryRepo interface {
 	FindAllCategories(ctx context.Context) ([]models.Categories, error)
 	FindCategoryById(ctx context.Context, id uint) (*models.Categories, error)

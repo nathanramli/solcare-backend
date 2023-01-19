@@ -35,6 +35,8 @@ func (r *router) Start(port string) {
 
 	r.router.POST("/v1/campaign", r.campaign.CreateCampaign)
 	r.router.GET("/v1/campaign/user/:userAddress", r.campaign.FindCampaignByUser)
+	r.router.POST("/v1/campaign/proposal", r.campaign.CreateProposal)
+	r.router.GET("/v1/campaign/proposal/:address", r.campaign.FindProposalByAddress)
 	r.router.GET("/v1/campaign", r.campaign.FindAllCampaign)
 	r.router.GET("/v1/campaign/:address", r.campaign.FindCampaignByAddress)
 

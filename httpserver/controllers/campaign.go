@@ -83,3 +83,30 @@ func (control *CampaignController) CreateCampaign(ctx *gin.Context) {
 	response := control.svc.CreateCampaign(ctx, &req)
 	WriteJsonResponse(ctx, response)
 }
+
+func (control *CampaignController) CreateProposal(ctx *gin.Context) {
+	var req params.CreateProposal
+	err := ctx.ShouldBind(&req)
+	if err != nil {
+		ctx.AbortWithStatusJSON(http.StatusBadRequest, gin.H{
+			"error": err.Error(),
+		})
+		return
+	}
+
+	err = validator.New().Struct(req)
+	if err != nil {
+		ctx.AbortWithStatusJSON(http.StatusBadRequest, gin.H{
+			"error": err.Error(),
+		})
+		return
+	}
+
+	response := control.svc.CreateProposal(ctx, &req)
+	WriteJsonResponse(ctx, response)
+}
+
+func (control *CampaignController) FindProposalByAddress(ctx *gin.Context) {
+	response := control.svc.FindProposalByAddress(ctx, ctx.Param("address"))
+	WriteJsonResponse(ctx, response)
+}

@@ -32,11 +32,12 @@ func main() {
 	userRepo := gorm.NewUserRepo(db)
 	campaignRepo := gorm.NewCampaignRepo(db)
 	categoryRepo := gorm.NewCategoryRepo(db)
+	proposalRepo := gorm.NewProposalRepo(db)
 
 	userSvc := services.NewUserSvc(userRepo)
 	userHandler := controllers.NewUserController(userSvc)
 
-	campaignSvc := services.NewCampaignSvc(campaignRepo, categoryRepo)
+	campaignSvc := services.NewCampaignSvc(campaignRepo, categoryRepo, proposalRepo)
 	campaignHandler := controllers.NewCampaignController(campaignSvc)
 
 	categorySvc := services.NewCategorySvc(categoryRepo)
