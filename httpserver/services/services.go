@@ -28,3 +28,8 @@ type CategoriesSvc interface {
 	FindAllCategories(ctx context.Context) *views.Response
 	FindCategoryById(ctx context.Context, categoryId uint) *views.Response
 }
+
+type ReportSvc interface {
+	CreateReport(ctx context.Context, reporter string, params *params.CreateReport) *views.Response
+	FindReportById(ctx context.Context, id uint) *views.Response
+}

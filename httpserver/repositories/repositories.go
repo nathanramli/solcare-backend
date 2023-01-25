@@ -28,3 +28,8 @@ type CategoryRepo interface {
 	FindAllCategories(ctx context.Context) ([]models.Categories, error)
 	FindCategoryById(ctx context.Context, id uint) (*models.Categories, error)
 }
+
+type ReportRepo interface {
+	SaveReport(ctx context.Context, report *models.Reports) error
+	FindReportById(ctx context.Context, id uint) (*models.Reports, error)
+}

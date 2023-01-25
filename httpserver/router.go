@@ -15,14 +15,16 @@ type router struct {
 	user     *controllers.UserController
 	campaign *controllers.CampaignController
 	category *controllers.CategoryController
+	report   *controllers.ReportController
 }
 
-func NewRouter(r *gin.Engine, user *controllers.UserController, campaign *controllers.CampaignController, category *controllers.CategoryController) *router {
+func NewRouter(r *gin.Engine, user *controllers.UserController, campaign *controllers.CampaignController, category *controllers.CategoryController, report *controllers.ReportController) *router {
 	return &router{
 		router:   r,
 		user:     user,
 		campaign: campaign,
 		category: category,
+		report:   report,
 	}
 }
 
@@ -35,6 +37,9 @@ func (r *router) Start(port string) {
 	r.router.PUT("/v1/users/info/:address", r.verifyToken, r.user.UpdateUser)
 	r.router.PUT("/v1/users/avatar/:address", r.verifyToken, r.user.UpdateAvatar)
 	r.router.GET("/v1/users/info/:address", r.user.FindUserByAddress)
+
+	r.router.POST("/v1/report", r.verifyToken, r.report.CreateReport)
+	r.router.GET("/v1/report/:id", r.report.FindReportById)
 
 	r.router.POST("/v1/campaign", r.campaign.CreateCampaign)
 	r.router.GET("/v1/campaign/user/:userAddress", r.campaign.FindCampaignByUser)

@@ -33,6 +33,7 @@ func main() {
 	campaignRepo := gorm.NewCampaignRepo(db)
 	categoryRepo := gorm.NewCategoryRepo(db)
 	proposalRepo := gorm.NewProposalRepo(db)
+	reportRepo := gorm.NewReportRepo(db)
 
 	userSvc := services.NewUserSvc(userRepo)
 	userHandler := controllers.NewUserController(userSvc)
@@ -43,7 +44,10 @@ func main() {
 	categorySvc := services.NewCategorySvc(categoryRepo)
 	categoryHandler := controllers.NewCategoryController(categorySvc)
 
-	app := httpserver.NewRouter(router, userHandler, campaignHandler, categoryHandler)
+	reportSvc := services.NewReportSvc(reportRepo, campaignRepo)
+	reportHandler := controllers.NewReportController(reportSvc)
+
+	app := httpserver.NewRouter(router, userHandler, campaignHandler, categoryHandler, reportHandler)
 	PORT := os.Getenv("PORT")
 	app.Start(":" + PORT)
 }
