@@ -39,3 +39,29 @@ func (control *UserController) Login(ctx *gin.Context) {
 	response := control.svc.Login(ctx, &req)
 	WriteJsonResponse(ctx, response)
 }
+
+func (control *UserController) UpdateUser(ctx *gin.Context) {
+	var req params.UpdateUser
+	err := ctx.ShouldBindJSON(&req)
+	if err != nil {
+		ctx.AbortWithStatusJSON(http.StatusBadRequest, gin.H{
+			"error": err.Error(),
+		})
+		return
+	}
+	err = validator.New().Struct(req)
+	if err != nil {
+		ctx.AbortWithStatusJSON(http.StatusBadRequest, gin.H{
+			"error": err.Error(),
+		})
+		return
+	}
+
+	response := control.svc.UpdateUser(ctx, ctx.Param("address"), &req)
+	WriteJsonResponse(ctx, response)
+}
+
+func (control *UserController) FindUserByAddress(ctx *gin.Context) {
+	response := control.svc.FindUserByAddress(ctx, ctx.Param("address"))
+	WriteJsonResponse(ctx, response)
+}

@@ -29,11 +29,6 @@ func (repo *userRepo) FindUserByAddress(ctx context.Context, address string) (*m
 	return user, repo.db.WithContext(ctx).Where("wallet_address = ?", address).Take(user).Error
 }
 
-func (repo *userRepo) FindUserById(ctx context.Context, id uint) (*models.Users, error) {
-	user := new(models.Users)
-	return user, repo.db.WithContext(ctx).Where("id = ?", id).Take(user).Error
-}
-
 func (repo *userRepo) UpdateUser(ctx context.Context, user *models.Users) error {
 	return repo.db.WithContext(ctx).Model(user).Updates(*user).Error
 }

@@ -9,6 +9,8 @@ import (
 
 type UserSvc interface {
 	Login(ctx context.Context, user *params.Login) *views.Response
+	UpdateUser(ctx context.Context, address string, params *params.UpdateUser) *views.Response
+	FindUserByAddress(ctx context.Context, address string) *views.Response
 }
 
 type CampaignSvc interface {

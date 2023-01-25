@@ -30,8 +30,10 @@ func (r *router) Start(port string) {
 	r.router.Static("/resources/", "./resources")
 
 	r.router.Use(cors)
-	// users
+
 	r.router.POST("/v1/users/login", r.user.Login)
+	r.router.PUT("/v1/users/info/:address", r.verifyToken, r.user.UpdateUser)
+	r.router.GET("/v1/users/info/:address", r.user.FindUserByAddress)
 
 	r.router.POST("/v1/campaign", r.campaign.CreateCampaign)
 	r.router.GET("/v1/campaign/user/:userAddress", r.campaign.FindCampaignByUser)

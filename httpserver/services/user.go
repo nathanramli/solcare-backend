@@ -70,3 +70,48 @@ func (svc *userSvc) Login(ctx context.Context, user *params.Login) *views.Respon
 		Token: ss,
 	})
 }
+
+func (svc *userSvc) UpdateUser(ctx context.Context, address string, params *params.UpdateUser) *views.Response {
+	user, err := svc.repo.FindUserByAddress(ctx, address)
+	if err != nil {
+		if err == gorm.ErrRecordNotFound {
+			return views.ErrorResponse(http.StatusBadRequest, views.M_BAD_REQUEST, err)
+		} else {
+			return views.ErrorResponse(http.StatusInternalServerError, views.M_INTERNAL_SERVER_ERROR, err)
+		}
+	}
+
+	user.FirstName = params.FirstName
+	user.LastName = params.LastName
+	user.Email = params.Email
+	user.Gender = *params.Gender
+
+	err = svc.repo.UpdateUser(ctx, user)
+	if err != nil {
+		return views.ErrorResponse(http.StatusInternalServerError, views.M_INTERNAL_SERVER_ERROR, err)
+	}
+
+	return views.SuccessResponse(http.StatusOK, views.M_OK, nil)
+}
+
+func (svc *userSvc) FindUserByAddress(ctx context.Context, address string) *views.Response {
+	user, err := svc.repo.FindUserByAddress(ctx, address)
+	if err != nil {
+		if err == gorm.ErrRecordNotFound {
+			return views.ErrorResponse(http.StatusBadRequest, views.M_BAD_REQUEST, err)
+		}
+		return views.ErrorResponse(http.StatusInternalServerError, views.M_INTERNAL_SERVER_ERROR, err)
+	}
+
+	return views.SuccessResponse(http.StatusOK, views.M_OK, views.FindUser{
+		Address:        user.WalletAddress,
+		CreatedAt:      user.CreatedAt.Unix(),
+		Email:          user.Email,
+		FirstName:      user.FirstName,
+		LastName:       user.LastName,
+		Gender:         user.Gender,
+		IsVerified:     user.IsVerified,
+		IsWarned:       user.IsWarned,
+		ProfilePicture: user.ProfilePicture,
+	})
+}
