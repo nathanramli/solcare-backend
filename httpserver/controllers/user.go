@@ -61,6 +61,27 @@ func (control *UserController) UpdateUser(ctx *gin.Context) {
 	WriteJsonResponse(ctx, response)
 }
 
+func (control *UserController) UpdateAvatar(ctx *gin.Context) {
+	var req params.UpdateUserAvatar
+	err := ctx.ShouldBind(&req)
+	if err != nil {
+		ctx.AbortWithStatusJSON(http.StatusBadRequest, gin.H{
+			"error": err.Error(),
+		})
+		return
+	}
+	err = validator.New().Struct(req)
+	if err != nil {
+		ctx.AbortWithStatusJSON(http.StatusBadRequest, gin.H{
+			"error": err.Error(),
+		})
+		return
+	}
+
+	response := control.svc.UpdateAvatar(ctx, ctx.Param("address"), &req)
+	WriteJsonResponse(ctx, response)
+}
+
 func (control *UserController) FindUserByAddress(ctx *gin.Context) {
 	response := control.svc.FindUserByAddress(ctx, ctx.Param("address"))
 	WriteJsonResponse(ctx, response)

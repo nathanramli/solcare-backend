@@ -10,6 +10,7 @@ import (
 type UserSvc interface {
 	Login(ctx context.Context, user *params.Login) *views.Response
 	UpdateUser(ctx context.Context, address string, params *params.UpdateUser) *views.Response
+	UpdateAvatar(ctx context.Context, address string, params *params.UpdateUserAvatar) *views.Response
 	FindUserByAddress(ctx context.Context, address string) *views.Response
 }
 

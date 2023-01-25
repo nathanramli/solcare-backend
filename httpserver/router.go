@@ -33,6 +33,7 @@ func (r *router) Start(port string) {
 
 	r.router.POST("/v1/users/login", r.user.Login)
 	r.router.PUT("/v1/users/info/:address", r.verifyToken, r.user.UpdateUser)
+	r.router.PUT("/v1/users/avatar/:address", r.verifyToken, r.user.UpdateAvatar)
 	r.router.GET("/v1/users/info/:address", r.user.FindUserByAddress)
 
 	r.router.POST("/v1/campaign", r.campaign.CreateCampaign)

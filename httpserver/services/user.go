@@ -5,6 +5,7 @@ import (
 	"errors"
 	"github.com/dgrijalva/jwt-go"
 	"github.com/gagliardetto/solana-go"
+	"github.com/gin-gonic/gin"
 	"github.com/mr-tron/base58"
 	"github.com/nathanramli/solcare-backend/common"
 	"github.com/nathanramli/solcare-backend/config"
@@ -14,6 +15,7 @@ import (
 	"github.com/nathanramli/solcare-backend/httpserver/repositories/models"
 	"gorm.io/gorm"
 	"net/http"
+	"strings"
 	"time"
 )
 
@@ -91,7 +93,17 @@ func (svc *userSvc) UpdateUser(ctx context.Context, address string, params *para
 		return views.ErrorResponse(http.StatusInternalServerError, views.M_INTERNAL_SERVER_ERROR, err)
 	}
 
-	return views.SuccessResponse(http.StatusOK, views.M_OK, nil)
+	return views.SuccessResponse(http.StatusOK, views.M_OK, views.FindUser{
+		Address:        user.WalletAddress,
+		CreatedAt:      user.CreatedAt.Unix(),
+		Email:          user.Email,
+		FirstName:      user.FirstName,
+		LastName:       user.LastName,
+		Gender:         user.Gender,
+		IsVerified:     user.IsVerified,
+		IsWarned:       user.IsWarned,
+		ProfilePicture: user.ProfilePicture,
+	})
 }
 
 func (svc *userSvc) FindUserByAddress(ctx context.Context, address string) *views.Response {
@@ -100,6 +112,43 @@ func (svc *userSvc) FindUserByAddress(ctx context.Context, address string) *view
 		if err == gorm.ErrRecordNotFound {
 			return views.ErrorResponse(http.StatusBadRequest, views.M_BAD_REQUEST, err)
 		}
+		return views.ErrorResponse(http.StatusInternalServerError, views.M_INTERNAL_SERVER_ERROR, err)
+	}
+
+	return views.SuccessResponse(http.StatusOK, views.M_OK, views.FindUser{
+		Address:        user.WalletAddress,
+		CreatedAt:      user.CreatedAt.Unix(),
+		Email:          user.Email,
+		FirstName:      user.FirstName,
+		LastName:       user.LastName,
+		Gender:         user.Gender,
+		IsVerified:     user.IsVerified,
+		IsWarned:       user.IsWarned,
+		ProfilePicture: user.ProfilePicture,
+	})
+}
+
+func (svc *userSvc) UpdateAvatar(ctx context.Context, address string, params *params.UpdateUserAvatar) *views.Response {
+	user, err := svc.repo.FindUserByAddress(ctx, address)
+	if err != nil {
+		if err == gorm.ErrRecordNotFound {
+			return views.ErrorResponse(http.StatusBadRequest, views.M_BAD_REQUEST, err)
+		} else {
+			return views.ErrorResponse(http.StatusInternalServerError, views.M_INTERNAL_SERVER_ERROR, err)
+		}
+	}
+
+	fileNameSplits := strings.Split(params.Picture.Filename, ".")
+	ext := fileNameSplits[len(fileNameSplits)-1]
+
+	err = ctx.(*gin.Context).SaveUploadedFile(params.Picture, "./resources/avatar_"+address+"."+ext)
+	if err != nil {
+		return views.ErrorResponse(http.StatusInternalServerError, views.M_INTERNAL_SERVER_ERROR, err)
+	}
+
+	user.ProfilePicture = "avatar_" + address + "." + ext
+	err = svc.repo.UpdateUser(ctx, user)
+	if err != nil {
 		return views.ErrorResponse(http.StatusInternalServerError, views.M_INTERNAL_SERVER_ERROR, err)
 	}
 
