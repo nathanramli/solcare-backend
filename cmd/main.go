@@ -34,8 +34,9 @@ func main() {
 	categoryRepo := gorm.NewCategoryRepo(db)
 	proposalRepo := gorm.NewProposalRepo(db)
 	reportRepo := gorm.NewReportRepo(db)
+	kycQueueRepo := gorm.NewKyqQueueRepo(db)
 
-	userSvc := services.NewUserSvc(userRepo)
+	userSvc := services.NewUserSvc(userRepo, kycQueueRepo)
 	userHandler := controllers.NewUserController(userSvc)
 
 	campaignSvc := services.NewCampaignSvc(campaignRepo, categoryRepo, proposalRepo)

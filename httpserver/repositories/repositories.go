@@ -33,3 +33,8 @@ type ReportRepo interface {
 	SaveReport(ctx context.Context, report *models.Reports) error
 	FindReportById(ctx context.Context, id uint) (*models.Reports, error)
 }
+
+type KycQueueRepo interface {
+	SaveKycQueue(ctx context.Context, request *models.KycQueues) error
+	FindRecentKycRequest(ctx context.Context, address string) (*models.KycQueues, error)
+}

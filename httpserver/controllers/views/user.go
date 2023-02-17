@@ -15,3 +15,14 @@ type FindUser struct {
 	IsWarned       bool   `json:"isWarned"`
 	ProfilePicture string `json:"profilePicture"`
 }
+
+type FindKycRequest struct {
+	Id                      uint   `json:"id"`
+	Nik                     string `json:"nik"`
+	UsersWalletAddress      string `json:"usersWalletAddress"`
+	RequestedAt             int64  `json:"requestedAt"`
+	IdCardPicture           string `json:"idCardPicture"`
+	FacePicture             string `json:"facePicture"`
+	SelfieWithIdCardPicture string `json:"selfieWithIdCardPicture"`
+	Status                  uint8  `json:"status"`
+}

@@ -17,3 +17,10 @@ type UpdateUser struct {
 type UpdateUserAvatar struct {
 	Picture *multipart.FileHeader `form:"picture" validate:"required"`
 }
+
+type RequestKyc struct {
+	Nik            string                `form:"nik" validate:"required,len=16"`
+	IdCard         *multipart.FileHeader `form:"idCard" validate:"required"`
+	Face           *multipart.FileHeader `form:"face" validate:"required"`
+	FaceWithIdCard *multipart.FileHeader `form:"faceWithIdCard" validate:"required"`
+}

@@ -15,17 +15,20 @@ import (
 	"github.com/nathanramli/solcare-backend/httpserver/repositories/models"
 	"gorm.io/gorm"
 	"net/http"
+	"strconv"
 	"strings"
 	"time"
 )
 
 type userSvc struct {
-	repo repositories.UserRepo
+	repo         repositories.UserRepo
+	kycQueueRepo repositories.KycQueueRepo
 }
 
-func NewUserSvc(repo repositories.UserRepo) UserSvc {
+func NewUserSvc(repo repositories.UserRepo, kycQueueRepo repositories.KycQueueRepo) UserSvc {
 	return &userSvc{
-		repo: repo,
+		repo:         repo,
+		kycQueueRepo: kycQueueRepo,
 	}
 }
 
@@ -163,4 +166,100 @@ func (svc *userSvc) UpdateAvatar(ctx context.Context, address string, params *pa
 		IsWarned:       user.IsWarned,
 		ProfilePicture: user.ProfilePicture,
 	})
+}
+
+func (svc *userSvc) FindRecentKycRequest(ctx context.Context, address string) *views.Response {
+	recentKycQueue, err := svc.kycQueueRepo.FindRecentKycRequest(ctx, address)
+	if err != nil && err != gorm.ErrRecordNotFound {
+		return views.ErrorResponse(http.StatusInternalServerError, views.M_INTERNAL_SERVER_ERROR, err)
+	}
+
+	if recentKycQueue == nil {
+		return views.SuccessResponse(http.StatusOK, views.M_OK, nil)
+	}
+
+	return views.SuccessResponse(http.StatusOK, views.M_OK, views.FindKycRequest{
+		Id:                      recentKycQueue.Id,
+		Nik:                     recentKycQueue.Nik,
+		UsersWalletAddress:      recentKycQueue.UsersWalletAddress,
+		RequestedAt:             recentKycQueue.RequestedAt.Unix(),
+		IdCardPicture:           recentKycQueue.IdCardPicture,
+		FacePicture:             recentKycQueue.FacePicture,
+		SelfieWithIdCardPicture: recentKycQueue.SelfieWithIdCardPicture,
+		Status:                  recentKycQueue.Status,
+	})
+}
+
+func (svc *userSvc) RequestKyc(ctx context.Context, address string, params *params.RequestKyc) *views.Response {
+	user, err := svc.repo.FindUserByAddress(ctx, address)
+	if err != nil {
+		if err == gorm.ErrRecordNotFound {
+			return views.ErrorResponse(http.StatusBadRequest, views.M_BAD_REQUEST, err)
+		} else {
+			return views.ErrorResponse(http.StatusInternalServerError, views.M_INTERNAL_SERVER_ERROR, err)
+		}
+	}
+
+	recentKycQueue, err := svc.kycQueueRepo.FindRecentKycRequest(ctx, address)
+	if err != nil && err != gorm.ErrRecordNotFound {
+		return views.ErrorResponse(http.StatusInternalServerError, views.M_INTERNAL_SERVER_ERROR, err)
+	}
+
+	if recentKycQueue != nil && (recentKycQueue.Status == models.KYC_STATUS_REQUESTED || recentKycQueue.Status == models.KYC_STATUS_APPROVED) {
+		return views.ErrorResponse(http.StatusBadRequest, views.M_BAD_REQUEST, errors.New("you are not allowed to request another kyc in this phase"))
+	}
+
+	kycQueue := &models.KycQueues{
+		RequestedAt:        time.Now(),
+		UsersWalletAddress: user.WalletAddress,
+		Status:             models.KYC_STATUS_REQUESTED,
+		Nik:                params.Nik,
+	}
+	err = svc.kycQueueRepo.SaveKycQueue(ctx, kycQueue)
+	if err != nil {
+		return views.ErrorResponse(http.StatusInternalServerError, views.M_INTERNAL_SERVER_ERROR, err)
+	}
+
+	idAsString := strconv.FormatUint(uint64(kycQueue.Id), 10)
+
+	// save face picture
+	fileNameSplits := strings.Split(params.Face.Filename, ".")
+	ext := fileNameSplits[len(fileNameSplits)-1]
+
+	name := "kyc_face_" + idAsString + "." + ext
+	err = ctx.(*gin.Context).SaveUploadedFile(params.Face, "./resources/"+name)
+	if err != nil {
+		return views.ErrorResponse(http.StatusInternalServerError, views.M_INTERNAL_SERVER_ERROR, err)
+	}
+	kycQueue.FacePicture = name
+
+	// save id card picture
+	fileNameSplits = strings.Split(params.IdCard.Filename, ".")
+	ext = fileNameSplits[len(fileNameSplits)-1]
+
+	name = "kyc_id_" + idAsString + "." + ext
+	err = ctx.(*gin.Context).SaveUploadedFile(params.IdCard, "./resources/"+name)
+	if err != nil {
+		return views.ErrorResponse(http.StatusInternalServerError, views.M_INTERNAL_SERVER_ERROR, err)
+	}
+	kycQueue.IdCardPicture = name
+
+	// save selfie with id card picture
+	fileNameSplits = strings.Split(params.FaceWithIdCard.Filename, ".")
+	ext = fileNameSplits[len(fileNameSplits)-1]
+
+	name = "kyc_selfie_with_id_" + idAsString + "." + ext
+	err = ctx.(*gin.Context).SaveUploadedFile(params.FaceWithIdCard, "./resources/"+name)
+	if err != nil {
+		return views.ErrorResponse(http.StatusInternalServerError, views.M_INTERNAL_SERVER_ERROR, err)
+	}
+	kycQueue.SelfieWithIdCardPicture = name
+
+	// update to the database
+	err = svc.kycQueueRepo.SaveKycQueue(ctx, kycQueue)
+	if err != nil {
+		return views.ErrorResponse(http.StatusInternalServerError, views.M_INTERNAL_SERVER_ERROR, err)
+	}
+
+	return views.SuccessResponse(http.StatusOK, views.M_OK, nil)
 }

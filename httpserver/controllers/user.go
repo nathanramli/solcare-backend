@@ -1,6 +1,7 @@
 package controllers
 
 import (
+	"github.com/nathanramli/solcare-backend/common"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -58,6 +59,38 @@ func (control *UserController) UpdateUser(ctx *gin.Context) {
 	}
 
 	response := control.svc.UpdateUser(ctx, ctx.Param("address"), &req)
+	WriteJsonResponse(ctx, response)
+}
+
+func (control *UserController) RequestKyc(ctx *gin.Context) {
+	var req params.RequestKyc
+	err := ctx.ShouldBind(&req)
+	if err != nil {
+		ctx.AbortWithStatusJSON(http.StatusBadRequest, gin.H{
+			"error": err.Error(),
+		})
+		return
+	}
+	err = validator.New().Struct(req)
+	if err != nil {
+		ctx.AbortWithStatusJSON(http.StatusBadRequest, gin.H{
+			"error": err.Error(),
+		})
+		return
+	}
+
+	claims, _ := ctx.Get("userData")
+	userData := claims.(*common.CustomClaims)
+
+	response := control.svc.RequestKyc(ctx, userData.Address, &req)
+	WriteJsonResponse(ctx, response)
+}
+
+func (control *UserController) FindRecentKycRequest(ctx *gin.Context) {
+	claims, _ := ctx.Get("userData")
+	userData := claims.(*common.CustomClaims)
+
+	response := control.svc.FindRecentKycRequest(ctx, userData.Address)
 	WriteJsonResponse(ctx, response)
 }
 
