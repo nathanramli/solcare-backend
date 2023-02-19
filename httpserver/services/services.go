@@ -13,7 +13,7 @@ type UserSvc interface {
 	UpdateAvatar(ctx context.Context, address string, params *params.UpdateUserAvatar) *views.Response
 	RequestKyc(ctx context.Context, address string, params *params.RequestKyc) *views.Response
 	FindUserByAddress(ctx context.Context, address string) *views.Response
-	FindRecentKycRequest(ctx context.Context, address string) *views.Response
+	FindKycRequestByUser(ctx context.Context, address string) *views.Response
 }
 
 type CampaignSvc interface {

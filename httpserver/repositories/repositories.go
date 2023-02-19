@@ -36,5 +36,5 @@ type ReportRepo interface {
 
 type KycQueueRepo interface {
 	SaveKycQueue(ctx context.Context, request *models.KycQueues) error
-	FindRecentKycRequest(ctx context.Context, address string) (*models.KycQueues, error)
+	FindKycRequestByUser(ctx context.Context, address string) (*models.KycQueues, error)
 }

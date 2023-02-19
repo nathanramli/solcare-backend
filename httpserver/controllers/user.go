@@ -86,11 +86,11 @@ func (control *UserController) RequestKyc(ctx *gin.Context) {
 	WriteJsonResponse(ctx, response)
 }
 
-func (control *UserController) FindRecentKycRequest(ctx *gin.Context) {
+func (control *UserController) FindKycRequestByUser(ctx *gin.Context) {
 	claims, _ := ctx.Get("userData")
 	userData := claims.(*common.CustomClaims)
 
-	response := control.svc.FindRecentKycRequest(ctx, userData.Address)
+	response := control.svc.FindKycRequestByUser(ctx, userData.Address)
 	WriteJsonResponse(ctx, response)
 }
 

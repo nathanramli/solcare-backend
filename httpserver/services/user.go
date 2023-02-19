@@ -168,25 +168,25 @@ func (svc *userSvc) UpdateAvatar(ctx context.Context, address string, params *pa
 	})
 }
 
-func (svc *userSvc) FindRecentKycRequest(ctx context.Context, address string) *views.Response {
-	recentKycQueue, err := svc.kycQueueRepo.FindRecentKycRequest(ctx, address)
-	if err != nil && err != gorm.ErrRecordNotFound {
+func (svc *userSvc) FindKycRequestByUser(ctx context.Context, address string) *views.Response {
+	kycQueue, err := svc.kycQueueRepo.FindKycRequestByUser(ctx, address)
+	if err != nil {
+		if err == gorm.ErrRecordNotFound {
+			return views.SuccessResponse(http.StatusOK, views.M_NOT_FOUND, nil)
+		}
+
 		return views.ErrorResponse(http.StatusInternalServerError, views.M_INTERNAL_SERVER_ERROR, err)
 	}
 
-	if recentKycQueue == nil {
-		return views.SuccessResponse(http.StatusOK, views.M_OK, nil)
-	}
-
 	return views.SuccessResponse(http.StatusOK, views.M_OK, views.FindKycRequest{
-		Id:                      recentKycQueue.Id,
-		Nik:                     recentKycQueue.Nik,
-		UsersWalletAddress:      recentKycQueue.UsersWalletAddress,
-		RequestedAt:             recentKycQueue.RequestedAt.Unix(),
-		IdCardPicture:           recentKycQueue.IdCardPicture,
-		FacePicture:             recentKycQueue.FacePicture,
-		SelfieWithIdCardPicture: recentKycQueue.SelfieWithIdCardPicture,
-		Status:                  recentKycQueue.Status,
+		Id:                      kycQueue.Id,
+		Nik:                     kycQueue.Nik,
+		UsersWalletAddress:      kycQueue.UsersWalletAddress,
+		RequestedAt:             kycQueue.RequestedAt.Unix(),
+		IdCardPicture:           kycQueue.IdCardPicture,
+		FacePicture:             kycQueue.FacePicture,
+		SelfieWithIdCardPicture: kycQueue.SelfieWithIdCardPicture,
+		Status:                  kycQueue.Status,
 	})
 }
 
@@ -200,9 +200,13 @@ func (svc *userSvc) RequestKyc(ctx context.Context, address string, params *para
 		}
 	}
 
-	recentKycQueue, err := svc.kycQueueRepo.FindRecentKycRequest(ctx, address)
-	if err != nil && err != gorm.ErrRecordNotFound {
-		return views.ErrorResponse(http.StatusInternalServerError, views.M_INTERNAL_SERVER_ERROR, err)
+	recentKycQueue, err := svc.kycQueueRepo.FindKycRequestByUser(ctx, address)
+	if err != nil {
+		if err == gorm.ErrRecordNotFound {
+			recentKycQueue = nil
+		} else {
+			return views.ErrorResponse(http.StatusInternalServerError, views.M_INTERNAL_SERVER_ERROR, err)
+		}
 	}
 
 	if recentKycQueue != nil && (recentKycQueue.Status == models.KYC_STATUS_REQUESTED || recentKycQueue.Status == models.KYC_STATUS_APPROVED) {
@@ -215,6 +219,11 @@ func (svc *userSvc) RequestKyc(ctx context.Context, address string, params *para
 		Status:             models.KYC_STATUS_REQUESTED,
 		Nik:                params.Nik,
 	}
+
+	if recentKycQueue != nil {
+		kycQueue.Id = recentKycQueue.Id
+	}
+
 	err = svc.kycQueueRepo.SaveKycQueue(ctx, kycQueue)
 	if err != nil {
 		return views.ErrorResponse(http.StatusInternalServerError, views.M_INTERNAL_SERVER_ERROR, err)
