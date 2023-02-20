@@ -15,7 +15,6 @@ import (
 	"github.com/nathanramli/solcare-backend/httpserver/repositories/models"
 	"gorm.io/gorm"
 	"net/http"
-	"strconv"
 	"strings"
 	"time"
 )
@@ -224,18 +223,11 @@ func (svc *userSvc) RequestKyc(ctx context.Context, address string, params *para
 		kycQueue.Id = recentKycQueue.Id
 	}
 
-	err = svc.kycQueueRepo.SaveKycQueue(ctx, kycQueue)
-	if err != nil {
-		return views.ErrorResponse(http.StatusInternalServerError, views.M_INTERNAL_SERVER_ERROR, err)
-	}
-
-	idAsString := strconv.FormatUint(uint64(kycQueue.Id), 10)
-
 	// save face picture
 	fileNameSplits := strings.Split(params.Face.Filename, ".")
 	ext := fileNameSplits[len(fileNameSplits)-1]
 
-	name := "kyc_face_" + idAsString + "." + ext
+	name := "kyc_face_" + address + "." + ext
 	err = ctx.(*gin.Context).SaveUploadedFile(params.Face, "./resources/"+name)
 	if err != nil {
 		return views.ErrorResponse(http.StatusInternalServerError, views.M_INTERNAL_SERVER_ERROR, err)
@@ -246,7 +238,7 @@ func (svc *userSvc) RequestKyc(ctx context.Context, address string, params *para
 	fileNameSplits = strings.Split(params.IdCard.Filename, ".")
 	ext = fileNameSplits[len(fileNameSplits)-1]
 
-	name = "kyc_id_" + idAsString + "." + ext
+	name = "kyc_id_" + address + "." + ext
 	err = ctx.(*gin.Context).SaveUploadedFile(params.IdCard, "./resources/"+name)
 	if err != nil {
 		return views.ErrorResponse(http.StatusInternalServerError, views.M_INTERNAL_SERVER_ERROR, err)
@@ -257,7 +249,7 @@ func (svc *userSvc) RequestKyc(ctx context.Context, address string, params *para
 	fileNameSplits = strings.Split(params.FaceWithIdCard.Filename, ".")
 	ext = fileNameSplits[len(fileNameSplits)-1]
 
-	name = "kyc_selfie_with_id_" + idAsString + "." + ext
+	name = "kyc_selfie_with_id_" + address + "." + ext
 	err = ctx.(*gin.Context).SaveUploadedFile(params.FaceWithIdCard, "./resources/"+name)
 	if err != nil {
 		return views.ErrorResponse(http.StatusInternalServerError, views.M_INTERNAL_SERVER_ERROR, err)
