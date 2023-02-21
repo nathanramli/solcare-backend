@@ -16,6 +16,7 @@ var (
 
 type CustomClaims struct {
 	Address string `json:"address"`
+	IsAdmin bool   `json:"isAdmin"`
 	jwt.StandardClaims
 }
 

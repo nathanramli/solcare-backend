@@ -63,6 +63,8 @@ func (svc *userSvc) Login(ctx context.Context, user *params.Login) *views.Respon
 
 	claims := &common.CustomClaims{
 		Address: user.Address,
+		//@TODO: Check if the address is an admin and then assign to this value
+		IsAdmin: false,
 	}
 
 	claims.ExpiresAt = time.Now().Add(time.Minute * time.Duration(config.GetJwtExpiredTime())).Unix()
@@ -88,7 +90,7 @@ func (svc *userSvc) UpdateUser(ctx context.Context, address string, params *para
 	user.FirstName = params.FirstName
 	user.LastName = params.LastName
 	user.Email = params.Email
-	user.Gender = *params.Gender
+	user.Gender = params.Gender
 
 	err = svc.repo.UpdateUser(ctx, user)
 	if err != nil {
@@ -101,9 +103,9 @@ func (svc *userSvc) UpdateUser(ctx context.Context, address string, params *para
 		Email:          user.Email,
 		FirstName:      user.FirstName,
 		LastName:       user.LastName,
-		Gender:         user.Gender,
-		IsVerified:     user.IsVerified,
-		IsWarned:       user.IsWarned,
+		Gender:         *user.Gender,
+		IsVerified:     *user.IsVerified,
+		IsWarned:       *user.IsWarned,
 		ProfilePicture: user.ProfilePicture,
 	})
 }
@@ -123,9 +125,9 @@ func (svc *userSvc) FindUserByAddress(ctx context.Context, address string) *view
 		Email:          user.Email,
 		FirstName:      user.FirstName,
 		LastName:       user.LastName,
-		Gender:         user.Gender,
-		IsVerified:     user.IsVerified,
-		IsWarned:       user.IsWarned,
+		Gender:         *user.Gender,
+		IsVerified:     *user.IsVerified,
+		IsWarned:       *user.IsWarned,
 		ProfilePicture: user.ProfilePicture,
 	})
 }
@@ -160,9 +162,9 @@ func (svc *userSvc) UpdateAvatar(ctx context.Context, address string, params *pa
 		Email:          user.Email,
 		FirstName:      user.FirstName,
 		LastName:       user.LastName,
-		Gender:         user.Gender,
-		IsVerified:     user.IsVerified,
-		IsWarned:       user.IsWarned,
+		Gender:         *user.Gender,
+		IsVerified:     *user.IsVerified,
+		IsWarned:       *user.IsWarned,
 		ProfilePicture: user.ProfilePicture,
 	})
 }

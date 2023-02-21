@@ -8,9 +8,9 @@ type Users struct {
 	Email          string
 	FirstName      string
 	LastName       string
-	Gender         bool
-	IsVerified     bool
-	IsWarned       bool
+	Gender         *bool
+	IsVerified     *bool
+	IsWarned       *bool
 	IdCardNumber   string
 	ProfilePicture string
 }
