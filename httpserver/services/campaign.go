@@ -49,7 +49,7 @@ func (svc *campaignSvc) FindCampaignByUser(ctx context.Context, userAddress stri
 			CategoryId:   campaign.CategoryId,
 			Status:       campaign.Status,
 			Banner:       "resources/" + campaign.Banner,
-			Delisted:     campaign.Delisted,
+			Delisted:     *campaign.Delisted,
 		}
 		resp[i] = r
 	}
@@ -74,7 +74,7 @@ func (svc *campaignSvc) FindCampaignByAddress(ctx context.Context, address strin
 		CategoryId:   campaign.CategoryId,
 		Status:       campaign.Status,
 		Banner:       "resources/" + campaign.Banner,
-		Delisted:     campaign.Delisted,
+		Delisted:     *campaign.Delisted,
 	})
 }
 
@@ -117,7 +117,7 @@ func (svc *campaignSvc) FindAllCampaign(ctx context.Context, order string, categ
 			CategoryId:   campaign.CategoryId,
 			Status:       campaign.Status,
 			Banner:       "resources/" + campaign.Banner,
-			Delisted:     campaign.Delisted,
+			Delisted:     *campaign.Delisted,
 		}
 		resp[i] = r
 	}

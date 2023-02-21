@@ -16,5 +16,5 @@ type Campaign struct {
 	Banner       string `gorm:"size:255"`
 	DonatedFunds uint64
 	Status       uint8
-	Delisted     bool
+	Delisted     *bool
 }
