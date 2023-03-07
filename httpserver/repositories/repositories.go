@@ -12,6 +12,11 @@ type UserRepo interface {
 	UpdateUser(ctx context.Context, user *models.Users) error
 }
 
+type AdminRepo interface {
+	FindAdminByAddress(ctx context.Context, address string) (*models.Admin, error)
+	FindAllAdmins(ctx context.Context) ([]models.Admin, error)
+}
+
 type CampaignRepo interface {
 	SaveCampaign(ctx context.Context, campaign *models.Campaign) error
 	FindCampaignByAddress(ctx context.Context, address string) (*models.Campaign, error)
@@ -37,4 +42,5 @@ type ReportRepo interface {
 type KycQueueRepo interface {
 	SaveKycQueue(ctx context.Context, request *models.KycQueues) error
 	FindKycRequestByUser(ctx context.Context, address string) (*models.KycQueues, error)
+	FindAllKycRequest(ctx context.Context, status int) ([]models.KycQueues, error)
 }

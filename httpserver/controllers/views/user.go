@@ -19,6 +19,7 @@ type FindUser struct {
 type FindKycRequest struct {
 	Id                      uint   `json:"id"`
 	Nik                     string `json:"nik"`
+	Name                    string `json:"name"`
 	UsersWalletAddress      string `json:"usersWalletAddress"`
 	RequestedAt             int64  `json:"requestedAt"`
 	IdCardPicture           string `json:"idCardPicture"`

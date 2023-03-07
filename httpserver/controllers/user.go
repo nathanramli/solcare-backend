@@ -3,6 +3,7 @@ package controllers
 import (
 	"github.com/nathanramli/solcare-backend/common"
 	"net/http"
+	"strconv"
 
 	"github.com/gin-gonic/gin"
 	"github.com/go-playground/validator/v10"
@@ -91,6 +92,47 @@ func (control *UserController) FindKycRequestByUser(ctx *gin.Context) {
 	userData := claims.(*common.CustomClaims)
 
 	response := control.svc.FindKycRequestByUser(ctx, userData.Address)
+	WriteJsonResponse(ctx, response)
+}
+
+func (control *UserController) FindAllKycRequest(ctx *gin.Context) {
+	var (
+		err    error
+		status = 0
+	)
+	statusPar, exist := ctx.GetQuery("status")
+	if exist && statusPar != "" {
+		status, err = strconv.Atoi(statusPar)
+		if err != nil {
+			ctx.AbortWithStatusJSON(http.StatusBadRequest, gin.H{
+				"error": err.Error(),
+			})
+			return
+		}
+	}
+
+	response := control.svc.FindAllKycRequest(ctx, status)
+	WriteJsonResponse(ctx, response)
+}
+
+func (control *UserController) VerifyKyc(ctx *gin.Context) {
+	var req params.VerifyKyc
+	err := ctx.ShouldBindJSON(&req)
+	if err != nil {
+		ctx.AbortWithStatusJSON(http.StatusBadRequest, gin.H{
+			"error": err.Error(),
+		})
+		return
+	}
+	err = validator.New().Struct(req)
+	if err != nil {
+		ctx.AbortWithStatusJSON(http.StatusBadRequest, gin.H{
+			"error": err.Error(),
+		})
+		return
+	}
+
+	response := control.svc.VerifyKyc(ctx, &req)
 	WriteJsonResponse(ctx, response)
 }
 

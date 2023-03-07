@@ -53,6 +53,9 @@ func (r *router) Start(port string) {
 	r.router.GET("/v1/categories", r.category.FindAllCategories)
 	r.router.GET("/v1/categories/:categoryId", r.category.FindCategoryById)
 
+	r.router.GET("/v1/admins/kyc", r.verifyAdminToken, r.user.FindAllKycRequest)
+	r.router.POST("/v1/admins/kyc", r.verifyAdminToken, r.user.VerifyKyc)
+
 	r.router.Run(port)
 }
 
@@ -71,6 +74,32 @@ func (r *router) verifyToken(ctx *gin.Context) {
 		})
 		return
 	}
+	ctx.Set("userData", claims)
+}
+
+func (r *router) verifyAdminToken(ctx *gin.Context) {
+	bearerToken := strings.Split(ctx.Request.Header.Get("Authorization"), "Bearer ")
+	if len(bearerToken) != 2 {
+		ctx.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{
+			"error": "invalid bearer token",
+		})
+		return
+	}
+	claims, err := common.ValidateToken(bearerToken[1])
+	if err != nil {
+		ctx.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{
+			"error": err.Error(),
+		})
+		return
+	}
+
+	if !claims.IsAdmin {
+		ctx.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{
+			"error": "you are not an admin",
+		})
+		return
+	}
+
 	ctx.Set("userData", claims)
 }
 

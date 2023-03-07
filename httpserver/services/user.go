@@ -22,12 +22,14 @@ import (
 type userSvc struct {
 	repo         repositories.UserRepo
 	kycQueueRepo repositories.KycQueueRepo
+	adminRepo    repositories.AdminRepo
 }
 
-func NewUserSvc(repo repositories.UserRepo, kycQueueRepo repositories.KycQueueRepo) UserSvc {
+func NewUserSvc(repo repositories.UserRepo, kycQueueRepo repositories.KycQueueRepo, adminRepo repositories.AdminRepo) UserSvc {
 	return &userSvc{
 		repo:         repo,
 		kycQueueRepo: kycQueueRepo,
+		adminRepo:    adminRepo,
 	}
 }
 
@@ -61,10 +63,17 @@ func (svc *userSvc) Login(ctx context.Context, user *params.Login) *views.Respon
 		}
 	}
 
+	admin, err := svc.adminRepo.FindAdminByAddress(ctx, user.Address)
+	if err != nil {
+		if err != gorm.ErrRecordNotFound {
+			return views.ErrorResponse(http.StatusInternalServerError, views.M_INTERNAL_SERVER_ERROR, err)
+		}
+		admin = nil
+	}
+
 	claims := &common.CustomClaims{
 		Address: user.Address,
-		//@TODO: Check if the address is an admin and then assign to this value
-		IsAdmin: false,
+		IsAdmin: admin != nil,
 	}
 
 	claims.ExpiresAt = time.Now().Add(time.Minute * time.Duration(config.GetJwtExpiredTime())).Unix()
@@ -108,6 +117,48 @@ func (svc *userSvc) UpdateUser(ctx context.Context, address string, params *para
 		IsWarned:       *user.IsWarned,
 		ProfilePicture: user.ProfilePicture,
 	})
+}
+
+func (svc *userSvc) VerifyKyc(ctx context.Context, params *params.VerifyKyc) *views.Response {
+	kycQueue, err := svc.kycQueueRepo.FindKycRequestByUser(ctx, params.Address)
+	if err != nil {
+		if err == gorm.ErrRecordNotFound {
+			return views.ErrorResponse(http.StatusBadRequest, views.M_BAD_REQUEST, err)
+		} else {
+			return views.ErrorResponse(http.StatusInternalServerError, views.M_INTERNAL_SERVER_ERROR, err)
+		}
+	}
+
+	if kycQueue.Status != models.KYC_STATUS_REQUESTED {
+		return views.ErrorResponse(http.StatusBadRequest, views.M_BAD_REQUEST, errors.New("kyc request is not in pending state"))
+	}
+
+	if *params.IsAccepted {
+		kycQueue.Status = models.KYC_STATUS_APPROVED
+
+		user, err := svc.repo.FindUserByAddress(ctx, params.Address)
+		if err != nil {
+			if err == gorm.ErrRecordNotFound {
+				return views.ErrorResponse(http.StatusBadRequest, views.M_BAD_REQUEST, err)
+			} else {
+				return views.ErrorResponse(http.StatusInternalServerError, views.M_INTERNAL_SERVER_ERROR, err)
+			}
+		}
+		user.IsVerified = params.IsAccepted
+		err = svc.repo.UpdateUser(ctx, user)
+		if err != nil {
+			return views.ErrorResponse(http.StatusInternalServerError, views.M_INTERNAL_SERVER_ERROR, err)
+		}
+	} else {
+		kycQueue.Status = models.KYC_STATUS_DECLINED
+	}
+
+	err = svc.kycQueueRepo.SaveKycQueue(ctx, kycQueue)
+	if err != nil {
+		return views.ErrorResponse(http.StatusInternalServerError, views.M_INTERNAL_SERVER_ERROR, err)
+	}
+
+	return views.SuccessResponse(http.StatusOK, views.M_OK, nil)
 }
 
 func (svc *userSvc) FindUserByAddress(ctx context.Context, address string) *views.Response {
@@ -182,6 +233,7 @@ func (svc *userSvc) FindKycRequestByUser(ctx context.Context, address string) *v
 	return views.SuccessResponse(http.StatusOK, views.M_OK, views.FindKycRequest{
 		Id:                      kycQueue.Id,
 		Nik:                     kycQueue.Nik,
+		Name:                    kycQueue.Users.FirstName + kycQueue.Users.LastName,
 		UsersWalletAddress:      kycQueue.UsersWalletAddress,
 		RequestedAt:             kycQueue.RequestedAt.Unix(),
 		IdCardPicture:           kycQueue.IdCardPicture,
@@ -189,6 +241,30 @@ func (svc *userSvc) FindKycRequestByUser(ctx context.Context, address string) *v
 		SelfieWithIdCardPicture: kycQueue.SelfieWithIdCardPicture,
 		Status:                  kycQueue.Status,
 	})
+}
+
+func (svc *userSvc) FindAllKycRequest(ctx context.Context, status int) *views.Response {
+	kycQueues, err := svc.kycQueueRepo.FindAllKycRequest(ctx, status)
+	if err != nil {
+		return views.ErrorResponse(http.StatusInternalServerError, views.M_INTERNAL_SERVER_ERROR, err)
+	}
+
+	resp := make([]views.FindKycRequest, len(kycQueues))
+	for i, kycQueue := range kycQueues {
+		r := views.FindKycRequest{
+			Id:                      kycQueue.Id,
+			Nik:                     kycQueue.Nik,
+			Name:                    kycQueue.Users.FirstName + kycQueue.Users.LastName,
+			UsersWalletAddress:      kycQueue.UsersWalletAddress,
+			RequestedAt:             kycQueue.RequestedAt.Unix(),
+			IdCardPicture:           kycQueue.IdCardPicture,
+			FacePicture:             kycQueue.FacePicture,
+			SelfieWithIdCardPicture: kycQueue.SelfieWithIdCardPicture,
+			Status:                  kycQueue.Status,
+		}
+		resp[i] = r
+	}
+	return views.SuccessResponse(http.StatusOK, views.M_OK, resp)
 }
 
 func (svc *userSvc) RequestKyc(ctx context.Context, address string, params *params.RequestKyc) *views.Response {

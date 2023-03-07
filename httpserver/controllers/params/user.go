@@ -24,3 +24,8 @@ type RequestKyc struct {
 	Face           *multipart.FileHeader `form:"face" validate:"required"`
 	FaceWithIdCard *multipart.FileHeader `form:"faceWithIdCard" validate:"required"`
 }
+
+type VerifyKyc struct {
+	Address    string `json:"address" validate:"required"`
+	IsAccepted *bool  `json:"isAccepted"`
+}
