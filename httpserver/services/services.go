@@ -13,7 +13,9 @@ type UserSvc interface {
 	UpdateAvatar(ctx context.Context, address string, params *params.UpdateUserAvatar) *views.Response
 	RequestKyc(ctx context.Context, address string, params *params.RequestKyc) *views.Response
 	VerifyKyc(ctx context.Context, params *params.VerifyKyc) *views.Response
+	RemoveKyc(ctx context.Context, address string) *views.Response
 	FindUserByAddress(ctx context.Context, address string) *views.Response
+	FindAllUsers(ctx context.Context) *views.Response
 	FindKycRequestByUser(ctx context.Context, address string) *views.Response
 	FindAllKycRequest(ctx context.Context, status int) *views.Response
 }

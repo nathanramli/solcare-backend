@@ -32,3 +32,12 @@ func (repo *userRepo) FindUserByAddress(ctx context.Context, address string) (*m
 func (repo *userRepo) UpdateUser(ctx context.Context, user *models.Users) error {
 	return repo.db.WithContext(ctx).Model(user).Updates(*user).Error
 }
+
+func (repo *userRepo) FindAllUsers(ctx context.Context) ([]models.Users, error) {
+	var users []models.Users
+
+	if err := repo.db.WithContext(ctx).Find(&users).Error; err != nil {
+		return users, err
+	}
+	return users, nil
+}

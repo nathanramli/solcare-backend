@@ -243,6 +243,30 @@ func (svc *userSvc) FindKycRequestByUser(ctx context.Context, address string) *v
 	})
 }
 
+func (svc *userSvc) FindAllUsers(ctx context.Context) *views.Response {
+	users, err := svc.repo.FindAllUsers(ctx)
+	if err != nil {
+		return views.ErrorResponse(http.StatusInternalServerError, views.M_INTERNAL_SERVER_ERROR, err)
+	}
+
+	resp := make([]views.FindUser, len(users))
+	for i, user := range users {
+		r := views.FindUser{
+			Address:        user.WalletAddress,
+			CreatedAt:      user.CreatedAt.Unix(),
+			Email:          user.Email,
+			FirstName:      user.FirstName,
+			LastName:       user.LastName,
+			Gender:         *user.Gender,
+			IsVerified:     *user.IsVerified,
+			IsWarned:       *user.IsWarned,
+			ProfilePicture: user.ProfilePicture,
+		}
+		resp[i] = r
+	}
+	return views.SuccessResponse(http.StatusOK, views.M_OK, resp)
+}
+
 func (svc *userSvc) FindAllKycRequest(ctx context.Context, status int) *views.Response {
 	kycQueues, err := svc.kycQueueRepo.FindAllKycRequest(ctx, status)
 	if err != nil {
@@ -336,6 +360,46 @@ func (svc *userSvc) RequestKyc(ctx context.Context, address string, params *para
 
 	// update to the database
 	err = svc.kycQueueRepo.SaveKycQueue(ctx, kycQueue)
+	if err != nil {
+		return views.ErrorResponse(http.StatusInternalServerError, views.M_INTERNAL_SERVER_ERROR, err)
+	}
+
+	return views.SuccessResponse(http.StatusOK, views.M_OK, nil)
+}
+
+func (svc *userSvc) RemoveKyc(ctx context.Context, address string) *views.Response {
+	user, err := svc.repo.FindUserByAddress(ctx, address)
+	if err != nil {
+		if err == gorm.ErrRecordNotFound {
+			return views.ErrorResponse(http.StatusBadRequest, views.M_BAD_REQUEST, err)
+		} else {
+			return views.ErrorResponse(http.StatusInternalServerError, views.M_INTERNAL_SERVER_ERROR, err)
+		}
+	}
+
+	if *user.IsVerified == false {
+		return views.ErrorResponse(http.StatusBadRequest, views.M_BAD_REQUEST, errors.New("user is not verified"))
+	}
+
+	recentKycQueue, err := svc.kycQueueRepo.FindKycRequestByUser(ctx, address)
+	if err != nil {
+		if err == gorm.ErrRecordNotFound {
+			return views.ErrorResponse(http.StatusBadRequest, views.M_BAD_REQUEST, errors.New("user never sent kyc request"))
+		} else {
+			return views.ErrorResponse(http.StatusInternalServerError, views.M_INTERNAL_SERVER_ERROR, err)
+		}
+	}
+
+	recentKycQueue.Status = models.KYC_STATUS_REMOVED
+	off := false
+	user.IsVerified = &off
+
+	err = svc.kycQueueRepo.SaveKycQueue(ctx, recentKycQueue)
+	if err != nil {
+		return views.ErrorResponse(http.StatusInternalServerError, views.M_INTERNAL_SERVER_ERROR, err)
+	}
+
+	err = svc.repo.UpdateUser(ctx, user)
 	if err != nil {
 		return views.ErrorResponse(http.StatusInternalServerError, views.M_INTERNAL_SERVER_ERROR, err)
 	}

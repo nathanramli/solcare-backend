@@ -37,6 +37,7 @@ func (r *router) Start(port string) {
 	r.router.PUT("/v1/users/info/:address", r.verifyToken, r.user.UpdateUser)
 	r.router.PUT("/v1/users/avatar/:address", r.verifyToken, r.user.UpdateAvatar)
 	r.router.GET("/v1/users/info/:address", r.user.FindUserByAddress)
+	r.router.GET("/v1/users", r.user.FindAllUsers)
 	r.router.POST("/v1/users/kyc", r.verifyToken, r.user.RequestKyc)
 	r.router.GET("/v1/users/kyc", r.verifyToken, r.user.FindKycRequestByUser)
 
@@ -55,6 +56,7 @@ func (r *router) Start(port string) {
 
 	r.router.GET("/v1/admins/kyc", r.verifyAdminToken, r.user.FindAllKycRequest)
 	r.router.POST("/v1/admins/kyc", r.verifyAdminToken, r.user.VerifyKyc)
+	r.router.DELETE("/v1/admins/kyc/:address", r.verifyAdminToken, r.user.RemoveKyc)
 
 	r.router.Run(port)
 }

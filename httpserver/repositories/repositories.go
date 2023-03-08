@@ -9,6 +9,7 @@ import (
 type UserRepo interface {
 	CreateUser(ctx context.Context, user *models.Users) error
 	FindUserByAddress(ctx context.Context, address string) (*models.Users, error)
+	FindAllUsers(ctx context.Context) ([]models.Users, error)
 	UpdateUser(ctx context.Context, user *models.Users) error
 }
 

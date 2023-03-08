@@ -115,6 +115,11 @@ func (control *UserController) FindAllKycRequest(ctx *gin.Context) {
 	WriteJsonResponse(ctx, response)
 }
 
+func (control *UserController) FindAllUsers(ctx *gin.Context) {
+	response := control.svc.FindAllUsers(ctx)
+	WriteJsonResponse(ctx, response)
+}
+
 func (control *UserController) VerifyKyc(ctx *gin.Context) {
 	var req params.VerifyKyc
 	err := ctx.ShouldBindJSON(&req)
@@ -154,6 +159,11 @@ func (control *UserController) UpdateAvatar(ctx *gin.Context) {
 	}
 
 	response := control.svc.UpdateAvatar(ctx, ctx.Param("address"), &req)
+	WriteJsonResponse(ctx, response)
+}
+
+func (control *UserController) RemoveKyc(ctx *gin.Context) {
+	response := control.svc.RemoveKyc(ctx, ctx.Param("address"))
 	WriteJsonResponse(ctx, response)
 }
 
