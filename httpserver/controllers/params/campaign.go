@@ -10,3 +10,13 @@ type CreateCampaign struct {
 	CategoryId   uint                  `form:"categoryId" validate:"required"`
 	Banner       *multipart.FileHeader `form:"banner" validate:"required"`
 }
+
+type UploadEvidence struct {
+	CampaignAddress string                `form:"campaignAddress" validate:"required"`
+	Attachment      *multipart.FileHeader `form:"attachment" validate:"required"`
+}
+
+type VerifyEvidence struct {
+	Address    string `json:"address" validate:"required"`
+	IsApproved *bool  `json:"isApproved"`
+}

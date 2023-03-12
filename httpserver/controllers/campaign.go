@@ -110,3 +110,52 @@ func (control *CampaignController) FindProposalByAddress(ctx *gin.Context) {
 	response := control.svc.FindProposalByAddress(ctx, ctx.Param("address"))
 	WriteJsonResponse(ctx, response)
 }
+
+func (control *CampaignController) FindAllCampaignWithEvidence(ctx *gin.Context) {
+	response := control.svc.FindAllCampaignWithEvidence(ctx)
+	WriteJsonResponse(ctx, response)
+}
+
+func (control *CampaignController) UploadEvidence(ctx *gin.Context) {
+	var req params.UploadEvidence
+	err := ctx.ShouldBind(&req)
+	if err != nil {
+		ctx.AbortWithStatusJSON(http.StatusBadRequest, gin.H{
+			"error": err.Error(),
+		})
+		return
+	}
+
+	err = validator.New().Struct(req)
+	if err != nil {
+		ctx.AbortWithStatusJSON(http.StatusBadRequest, gin.H{
+			"error": err.Error(),
+		})
+		return
+	}
+
+	response := control.svc.UploadEvidence(ctx, &req)
+	WriteJsonResponse(ctx, response)
+}
+
+func (control *CampaignController) VerifyEvidence(ctx *gin.Context) {
+	var req params.VerifyEvidence
+	err := ctx.ShouldBindJSON(&req)
+	if err != nil {
+		ctx.AbortWithStatusJSON(http.StatusBadRequest, gin.H{
+			"error": err.Error(),
+		})
+		return
+	}
+
+	err = validator.New().Struct(req)
+	if err != nil {
+		ctx.AbortWithStatusJSON(http.StatusBadRequest, gin.H{
+			"error": err.Error(),
+		})
+		return
+	}
+
+	response := control.svc.VerifyEvidence(ctx, &req)
+	WriteJsonResponse(ctx, response)
+}

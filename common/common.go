@@ -14,6 +14,10 @@ var (
 	LoginMessage = []byte("s3cretseedsforlogin")
 )
 
+func GetBoolPointer(val bool) *bool {
+	return &val
+}
+
 type CustomClaims struct {
 	Address string `json:"address"`
 	IsAdmin bool   `json:"isAdmin"`

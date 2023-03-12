@@ -3,9 +3,11 @@ package services
 import (
 	"context"
 	"errors"
+	bin "github.com/gagliardetto/binary"
 	"github.com/gagliardetto/solana-go"
 	"github.com/gagliardetto/solana-go/rpc"
 	"github.com/gin-gonic/gin"
+	"github.com/nathanramli/solcare-backend/common"
 	"github.com/nathanramli/solcare-backend/config"
 	"github.com/nathanramli/solcare-backend/httpserver/controllers/params"
 	"github.com/nathanramli/solcare-backend/httpserver/controllers/views"
@@ -217,6 +219,7 @@ func (svc *campaignSvc) CreateCampaign(ctx context.Context, params *params.Creat
 		CategoryId:   params.CategoryId,
 		Banner:       pubkey.String() + "." + ext,
 		CreatedAt:    time.Now(),
+		Delisted:     common.GetBoolPointer(false),
 	})
 	if err != nil {
 		return views.ErrorResponse(http.StatusInternalServerError, views.M_INTERNAL_SERVER_ERROR, err)
@@ -239,4 +242,115 @@ func (svc *campaignSvc) FindProposalByAddress(ctx context.Context, address strin
 		CampaignAddress: proposal.CampaignAddress,
 		Url:             proposal.Url,
 	})
+}
+
+func (svc *campaignSvc) UploadEvidence(ctx context.Context, params *params.UploadEvidence) *views.Response {
+	pubkey, err := solana.PublicKeyFromBase58(params.CampaignAddress)
+	if err != nil {
+		return views.ErrorResponse(http.StatusBadRequest, views.M_BAD_REQUEST, err)
+	}
+
+	campaign, err := svc.repo.FindCampaignByAddress(ctx, params.CampaignAddress)
+	if err != nil {
+		if err == gorm.ErrRecordNotFound {
+			return views.ErrorResponse(http.StatusBadRequest, views.M_BAD_REQUEST, err)
+		}
+		return views.ErrorResponse(http.StatusInternalServerError, views.M_INTERNAL_SERVER_ERROR, err)
+	}
+
+	if campaign.Status != models.EVIDENCE_STATUS_WAITING {
+		return views.ErrorResponse(http.StatusBadRequest, views.M_BAD_REQUEST, errors.New("evidence is not on waiting phase"))
+	}
+
+	acc, err := config.RpcClient.GetAccountInfo(ctx, pubkey)
+	if err != nil {
+		if err == rpc.ErrNotFound {
+			return views.ErrorResponse(http.StatusBadRequest, views.M_NOT_FOUND, errors.New("campaign not found"))
+		}
+		return views.ErrorResponse(http.StatusInternalServerError, views.M_INTERNAL_SERVER_ERROR, err)
+	}
+
+	campaignData := &models.CampaignBlockchainData{}
+	borshDec := bin.NewBorshDecoder(acc.Value.Data.GetBinary())
+	err = borshDec.Decode(campaignData)
+	if err != nil {
+		return views.ErrorResponse(http.StatusInternalServerError, views.M_INTERNAL_SERVER_ERROR, err)
+	}
+
+	if campaignData.Status != models.CAMPAIGN_STATUS_FUNDED {
+		return views.ErrorResponse(http.StatusBadRequest, views.M_BAD_REQUEST, errors.New("campaign is not funded yet"))
+	}
+
+	claims := ctx.Value("userData")
+	userData := claims.(*common.CustomClaims)
+
+	if userData.Address != campaignData.Owner.String() {
+		return views.ErrorResponse(http.StatusUnauthorized, views.M_BAD_REQUEST, errors.New("you are not the owner of the campaign"))
+	}
+
+	fileNameSplits := strings.Split(params.Attachment.Filename, ".")
+	ext := fileNameSplits[len(fileNameSplits)-1]
+	fileName := "evidence_" + pubkey.String() + "." + ext
+
+	err = ctx.(*gin.Context).SaveUploadedFile(params.Attachment, "./resources/"+fileName)
+	if err != nil {
+		return views.ErrorResponse(http.StatusInternalServerError, views.M_INTERNAL_SERVER_ERROR, err)
+	}
+
+	campaign.Status = models.EVIDENCE_STATUS_REQUESTED
+	campaign.Evidence = fileName
+
+	err = svc.repo.SaveCampaign(ctx, campaign)
+	if err != nil {
+		return views.ErrorResponse(http.StatusInternalServerError, views.M_INTERNAL_SERVER_ERROR, err)
+	}
+
+	return views.SuccessResponse(http.StatusOK, views.M_OK, nil)
+}
+
+func (svc *campaignSvc) FindAllCampaignWithEvidence(ctx context.Context) *views.Response {
+	campaigns, err := svc.repo.FindAllCampaignWithEvidence(ctx)
+	if err != nil {
+		return views.ErrorResponse(http.StatusInternalServerError, views.M_INTERNAL_SERVER_ERROR, err)
+	}
+
+	resp := make([]views.FindAllCampaignsWithEvidence, len(campaigns))
+	for i, campaign := range campaigns {
+		r := views.FindAllCampaignsWithEvidence{
+			Address:      campaign.Address,
+			OwnerAddress: campaign.OwnerAddress,
+			Status:       campaign.Status,
+			Evidence:     "resources/" + campaign.Evidence,
+			Delisted:     *campaign.Delisted,
+		}
+		resp[i] = r
+	}
+	return views.SuccessResponse(http.StatusOK, views.M_OK, resp)
+}
+
+func (svc *campaignSvc) VerifyEvidence(ctx context.Context, params *params.VerifyEvidence) *views.Response {
+	campaign, err := svc.repo.FindCampaignByAddress(ctx, params.Address)
+	if err != nil {
+		if err == gorm.ErrRecordNotFound {
+			return views.ErrorResponse(http.StatusBadRequest, views.M_BAD_REQUEST, err)
+		}
+		return views.ErrorResponse(http.StatusInternalServerError, views.M_INTERNAL_SERVER_ERROR, err)
+	}
+
+	if campaign.Status != models.EVIDENCE_STATUS_REQUESTED {
+		return views.ErrorResponse(http.StatusBadRequest, views.M_BAD_REQUEST, errors.New("campaign is not waiting for review"))
+	}
+
+	if *params.IsApproved {
+		campaign.Status = models.EVIDENCE_STATUS_SUCCESS
+	} else {
+		campaign.Status = models.EVIDENCE_STATUS_FAILED
+	}
+
+	err = svc.repo.SaveCampaign(ctx, campaign)
+	if err != nil {
+		return views.ErrorResponse(http.StatusInternalServerError, views.M_INTERNAL_SERVER_ERROR, err)
+	}
+
+	return views.SuccessResponse(http.StatusOK, views.M_OK, nil)
 }

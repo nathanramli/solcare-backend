@@ -11,3 +11,11 @@ type FindAllCampaigns struct {
 	Banner       string `json:"banner"`
 	Delisted     bool   `json:"delisted"`
 }
+
+type FindAllCampaignsWithEvidence struct {
+	Address      string `json:"address"`
+	OwnerAddress string `json:"ownerAddress"`
+	Status       uint8  `json:"status"`
+	Evidence     string `json:"evidence"`
+	Delisted     bool   `json:"delisted"`
+}

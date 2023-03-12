@@ -50,6 +50,9 @@ func (r *router) Start(port string) {
 	r.router.GET("/v1/campaign/proposal/:address", r.campaign.FindProposalByAddress)
 	r.router.GET("/v1/campaign", r.campaign.FindAllCampaign)
 	r.router.GET("/v1/campaign/:address", r.campaign.FindCampaignByAddress)
+	r.router.POST("/v1/campaign/evidence", r.verifyToken, r.campaign.UploadEvidence)
+	r.router.GET("/v1/campaign/evidence", r.verifyAdminToken, r.campaign.FindAllCampaignWithEvidence)
+	r.router.POST("/v1/campaign/evidence/verify", r.verifyAdminToken, r.campaign.VerifyEvidence)
 
 	r.router.GET("/v1/categories", r.category.FindAllCategories)
 	r.router.GET("/v1/categories/:categoryId", r.category.FindCategoryById)

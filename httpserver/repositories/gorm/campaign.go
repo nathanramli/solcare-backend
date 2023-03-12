@@ -47,3 +47,12 @@ func (r *campaignRepo) FindAllCampaign(ctx context.Context, orders []string, lim
 	}
 	return campaigns, nil
 }
+
+func (r *campaignRepo) FindAllCampaignWithEvidence(ctx context.Context) ([]models.Campaign, error) {
+	var campaigns []models.Campaign
+
+	if err := r.db.WithContext(ctx).Where("status = ?", models.EVIDENCE_STATUS_REQUESTED).Find(&campaigns).Error; err != nil {
+		return campaigns, err
+	}
+	return campaigns, nil
+}

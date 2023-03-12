@@ -25,9 +25,13 @@ type CampaignSvc interface {
 	FindCampaignByUser(ctx context.Context, userAddress string) *views.Response
 	FindCampaignByAddress(ctx context.Context, address string) *views.Response
 	FindAllCampaign(ctx context.Context, order string, category int, search string, offset int) *views.Response
+	FindAllCampaignWithEvidence(ctx context.Context) *views.Response
 
 	CreateProposal(ctx context.Context, campaign *params.CreateProposal) *views.Response
 	FindProposalByAddress(ctx context.Context, address string) *views.Response
+
+	UploadEvidence(ctx context.Context, params *params.UploadEvidence) *views.Response
+	VerifyEvidence(ctx context.Context, params *params.VerifyEvidence) *views.Response
 }
 
 type CategoriesSvc interface {
