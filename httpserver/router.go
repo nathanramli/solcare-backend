@@ -29,9 +29,11 @@ func NewRouter(r *gin.Engine, user *controllers.UserController, campaign *contro
 }
 
 func (r *router) Start(port string) {
+	r.router.Use(cors)
+
 	r.router.Static("/resources/", "./resources")
 
-	r.router.Use(cors)
+	r.router.Use(contentJson)
 
 	r.router.POST("/v1/users/login", r.user.Login)
 	r.router.PUT("/v1/users/info/:address", r.verifyToken, r.user.UpdateUser)
@@ -109,7 +111,6 @@ func (r *router) verifyAdminToken(ctx *gin.Context) {
 }
 
 func cors(c *gin.Context) {
-	c.Header("Content-Type", "application/json")
 	c.Header("Access-Control-Allow-Origin", "*")
 	c.Header("Access-Control-Allow-Credentials", "true")
 	c.Header("Access-Control-Allow-Headers", "Content-Type, Content-Length, Accept-Encoding, X-CSRF-Token, Authorization, accept, origin, Cache-Control, X-Requested-With")
@@ -119,6 +120,12 @@ func cors(c *gin.Context) {
 		c.AbortWithStatus(204)
 		return
 	}
+
+	c.Next()
+}
+
+func contentJson(c *gin.Context) {
+	c.Header("Content-Type", "application/json")
 
 	c.Next()
 }
