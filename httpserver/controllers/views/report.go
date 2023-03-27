@@ -7,3 +7,10 @@ type FindReport struct {
 	Description     string `json:"description"`
 	CreatedAt       int64  `json:"createdAt"`
 }
+
+type FindGroupedReports struct {
+	CampaignAddress string `json:"campaignAddress"`
+	OwnerAddress    string `json:"ownerAddress"`
+	CampaignTitle   string `json:"campaignTitle"`
+	Total           int64  `json:"total"`
+}

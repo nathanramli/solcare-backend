@@ -42,4 +42,7 @@ type CategoriesSvc interface {
 type ReportSvc interface {
 	CreateReport(ctx context.Context, reporter string, params *params.CreateReport) *views.Response
 	FindReportById(ctx context.Context, id uint) *views.Response
+	FindGroupedReports(ctx context.Context) *views.Response
+	FindReportsByAddress(ctx context.Context, address string) *views.Response
+	VerifyReport(ctx context.Context, params *params.VerifyReport) *views.Response
 }

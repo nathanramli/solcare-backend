@@ -39,6 +39,8 @@ type CategoryRepo interface {
 type ReportRepo interface {
 	SaveReport(ctx context.Context, report *models.Reports) error
 	FindReportById(ctx context.Context, id uint) (*models.Reports, error)
+	FindGroupedReports(ctx context.Context) ([]map[string]interface{}, error)
+	FindReportsByAddress(ctx context.Context, address string) ([]models.Reports, error)
 }
 
 type KycQueueRepo interface {

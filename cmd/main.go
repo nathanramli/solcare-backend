@@ -46,7 +46,7 @@ func main() {
 	categorySvc := services.NewCategorySvc(categoryRepo)
 	categoryHandler := controllers.NewCategoryController(categorySvc)
 
-	reportSvc := services.NewReportSvc(reportRepo, campaignRepo)
+	reportSvc := services.NewReportSvc(reportRepo, campaignRepo, userRepo)
 	reportHandler := controllers.NewReportController(reportSvc)
 
 	app := httpserver.NewRouter(router, userHandler, campaignHandler, categoryHandler, reportHandler)

@@ -57,3 +57,35 @@ func (control *ReportController) FindReportById(ctx *gin.Context) {
 	response := control.svc.FindReportById(ctx, uint(id))
 	WriteJsonResponse(ctx, response)
 }
+
+func (control *ReportController) FindGroupedReports(ctx *gin.Context) {
+	response := control.svc.FindGroupedReports(ctx)
+	WriteJsonResponse(ctx, response)
+}
+
+func (control *ReportController) FindReportsByAddress(ctx *gin.Context) {
+	response := control.svc.FindReportsByAddress(ctx, ctx.Param("address"))
+	WriteJsonResponse(ctx, response)
+}
+
+func (control *ReportController) VerifyReport(ctx *gin.Context) {
+	var req params.VerifyReport
+	err := ctx.ShouldBindJSON(&req)
+	if err != nil {
+		ctx.AbortWithStatusJSON(http.StatusBadRequest, gin.H{
+			"error": err.Error(),
+		})
+		return
+	}
+
+	err = validator.New().Struct(req)
+	if err != nil {
+		ctx.AbortWithStatusJSON(http.StatusBadRequest, gin.H{
+			"error": err.Error(),
+		})
+		return
+	}
+
+	response := control.svc.VerifyReport(ctx, &req)
+	WriteJsonResponse(ctx, response)
+}

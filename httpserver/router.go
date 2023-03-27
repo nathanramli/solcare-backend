@@ -45,6 +45,8 @@ func (r *router) Start(port string) {
 
 	r.router.POST("/v1/report", r.verifyToken, r.report.CreateReport)
 	r.router.GET("/v1/report/:id", r.report.FindReportById)
+	r.router.GET("/v1/report/group", r.report.FindGroupedReports)
+	r.router.GET("/v1/report/group/:address", r.report.FindReportsByAddress)
 
 	r.router.POST("/v1/campaign", r.campaign.CreateCampaign)
 	r.router.GET("/v1/campaign/user/:userAddress", r.campaign.FindCampaignByUser)
@@ -62,6 +64,7 @@ func (r *router) Start(port string) {
 	r.router.GET("/v1/admins/kyc", r.verifyAdminToken, r.user.FindAllKycRequest)
 	r.router.POST("/v1/admins/kyc", r.verifyAdminToken, r.user.VerifyKyc)
 	r.router.DELETE("/v1/admins/kyc/:address", r.verifyAdminToken, r.user.RemoveKyc)
+	r.router.POST("/v1/admins/reports/verify", r.verifyAdminToken, r.report.VerifyReport)
 
 	r.router.Run(port)
 }

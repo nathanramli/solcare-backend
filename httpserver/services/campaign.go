@@ -91,8 +91,11 @@ func (svc *campaignSvc) FindAllCampaign(ctx context.Context, order string, categ
 		orders = append(orders, "created_at desc")
 	}
 
-	filters := ""
+	filters := "delisted = false"
 	if categoryId != 0 {
+		if filters != "" {
+			filters += " AND "
+		}
 		filters += "category_id = '" + strconv.Itoa(categoryId) + "'"
 	}
 
