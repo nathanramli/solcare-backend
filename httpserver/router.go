@@ -48,6 +48,7 @@ func (r *router) Start(port string) {
 	r.router.GET("/v1/report/group", r.report.FindGroupedReports)
 	r.router.GET("/v1/report/group/:address", r.report.FindReportsByAddress)
 
+	r.router.GET("/v1/campaign/summary", r.campaign.FetchCampaignSummary)
 	r.router.POST("/v1/campaign", r.campaign.CreateCampaign)
 	r.router.GET("/v1/campaign/user/:userAddress", r.campaign.FindCampaignByUser)
 	r.router.POST("/v1/campaign/proposal", r.campaign.CreateProposal)

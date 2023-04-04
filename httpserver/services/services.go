@@ -26,6 +26,7 @@ type CampaignSvc interface {
 	FindCampaignByAddress(ctx context.Context, address string) *views.Response
 	FindAllCampaign(ctx context.Context, order string, category int, search string, offset int) *views.Response
 	FindAllCampaignWithEvidence(ctx context.Context) *views.Response
+	FetchCampaignSummary(ctx context.Context) *views.Response
 
 	CreateProposal(ctx context.Context, campaign *params.CreateProposal) *views.Response
 	FindProposalByAddress(ctx context.Context, address string) *views.Response

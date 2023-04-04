@@ -56,3 +56,9 @@ func (r *campaignRepo) FindAllCampaignWithEvidence(ctx context.Context) ([]model
 	}
 	return campaigns, nil
 }
+
+func (r *campaignRepo) CountTotalCampaigns(ctx context.Context) (int64, error) {
+	var total int64
+	err := r.db.WithContext(ctx).Model(&models.Campaign{}).Count(&total).Error
+	return total, err
+}

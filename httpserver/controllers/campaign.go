@@ -111,6 +111,11 @@ func (control *CampaignController) FindProposalByAddress(ctx *gin.Context) {
 	WriteJsonResponse(ctx, response)
 }
 
+func (control *CampaignController) FetchCampaignSummary(ctx *gin.Context) {
+	response := control.svc.FetchCampaignSummary(ctx)
+	WriteJsonResponse(ctx, response)
+}
+
 func (control *CampaignController) FindAllCampaignWithEvidence(ctx *gin.Context) {
 	response := control.svc.FindAllCampaignWithEvidence(ctx)
 	WriteJsonResponse(ctx, response)

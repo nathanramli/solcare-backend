@@ -331,6 +331,16 @@ func (svc *campaignSvc) FindAllCampaignWithEvidence(ctx context.Context) *views.
 	return views.SuccessResponse(http.StatusOK, views.M_OK, resp)
 }
 
+func (svc *campaignSvc) FetchCampaignSummary(ctx context.Context) *views.Response {
+	totalCampaign, err := svc.repo.CountTotalCampaigns(ctx)
+	if err != nil {
+		return views.ErrorResponse(http.StatusInternalServerError, views.M_INTERNAL_SERVER_ERROR, err)
+	}
+	return views.SuccessResponse(http.StatusOK, views.M_OK, views.FetchCampaignSummary{
+		TotalCampaigns: totalCampaign,
+	})
+}
+
 func (svc *campaignSvc) VerifyEvidence(ctx context.Context, params *params.VerifyEvidence) *views.Response {
 	campaign, err := svc.repo.FindCampaignByAddress(ctx, params.Address)
 	if err != nil {

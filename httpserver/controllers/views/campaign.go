@@ -19,3 +19,7 @@ type FindAllCampaignsWithEvidence struct {
 	Evidence     string `json:"evidence"`
 	Delisted     bool   `json:"delisted"`
 }
+
+type FetchCampaignSummary struct {
+	TotalCampaigns int64 `json:"totalCampaigns"`
+}

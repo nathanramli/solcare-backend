@@ -24,6 +24,7 @@ type CampaignRepo interface {
 	FindCampaignByUser(ctx context.Context, userAddress string) ([]models.Campaign, error)
 	FindAllCampaign(ctx context.Context, orders []string, limit int, offset int, filters string) ([]models.Campaign, error)
 	FindAllCampaignWithEvidence(ctx context.Context) ([]models.Campaign, error)
+	CountTotalCampaigns(ctx context.Context) (int64, error)
 }
 
 type ProposalRepo interface {
