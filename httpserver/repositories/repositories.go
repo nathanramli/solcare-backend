@@ -25,6 +25,8 @@ type CampaignRepo interface {
 	FindAllCampaign(ctx context.Context, orders []string, limit int, offset int, filters string) ([]models.Campaign, error)
 	FindAllCampaignWithEvidence(ctx context.Context) ([]models.Campaign, error)
 	CountTotalCampaigns(ctx context.Context) (int64, error)
+	CountTotalSuccessCampaigns(ctx context.Context) (int64, error)
+	CountTotalFailedCampaigns(ctx context.Context) (int64, error)
 }
 
 type ProposalRepo interface {

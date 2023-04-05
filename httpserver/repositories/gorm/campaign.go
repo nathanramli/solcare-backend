@@ -62,3 +62,15 @@ func (r *campaignRepo) CountTotalCampaigns(ctx context.Context) (int64, error) {
 	err := r.db.WithContext(ctx).Model(&models.Campaign{}).Count(&total).Error
 	return total, err
 }
+
+func (r *campaignRepo) CountTotalSuccessCampaigns(ctx context.Context) (int64, error) {
+	var total int64
+	err := r.db.WithContext(ctx).Model(&models.Campaign{}).Where("status = ?", models.EVIDENCE_STATUS_SUCCESS).Count(&total).Error
+	return total, err
+}
+
+func (r *campaignRepo) CountTotalFailedCampaigns(ctx context.Context) (int64, error) {
+	var total int64
+	err := r.db.WithContext(ctx).Model(&models.Campaign{}).Where("status = ?", models.EVIDENCE_STATUS_FAILED).Count(&total).Error
+	return total, err
+}

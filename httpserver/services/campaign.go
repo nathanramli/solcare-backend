@@ -336,8 +336,21 @@ func (svc *campaignSvc) FetchCampaignSummary(ctx context.Context) *views.Respons
 	if err != nil {
 		return views.ErrorResponse(http.StatusInternalServerError, views.M_INTERNAL_SERVER_ERROR, err)
 	}
+
+	totalSuccessCampaign, err := svc.repo.CountTotalSuccessCampaigns(ctx)
+	if err != nil {
+		return views.ErrorResponse(http.StatusInternalServerError, views.M_INTERNAL_SERVER_ERROR, err)
+	}
+
+	totalFailedCampaign, err := svc.repo.CountTotalFailedCampaigns(ctx)
+	if err != nil {
+		return views.ErrorResponse(http.StatusInternalServerError, views.M_INTERNAL_SERVER_ERROR, err)
+	}
+
 	return views.SuccessResponse(http.StatusOK, views.M_OK, views.FetchCampaignSummary{
-		TotalCampaigns: totalCampaign,
+		TotalCampaigns:        totalCampaign,
+		TotalSuccessCampaigns: totalSuccessCampaign,
+		TotalFailedCampaigns:  totalFailedCampaign,
 	})
 }
 
