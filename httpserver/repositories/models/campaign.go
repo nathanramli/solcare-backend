@@ -20,7 +20,7 @@ type Campaign struct {
 	Evidence     string `gorm:"size:255"`
 	DonatedFunds uint64
 	Status       uint8
-	Delisted     *bool
+	Delisted     *bool `gorm:"default:false"`
 }
 
 const (
