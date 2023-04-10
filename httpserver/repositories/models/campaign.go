@@ -14,11 +14,8 @@ type Campaign struct {
 	Description  string `gorm:"size:5000"`
 	CategoryId   uint
 	Categories   Categories `gorm:"foreignKey:CategoryId"`
-	AmountTarget uint64
-	DateTarget   time.Time
-	Banner       string `gorm:"size:255"`
-	Evidence     string `gorm:"size:255"`
-	DonatedFunds uint64
+	Banner       string     `gorm:"size:255"`
+	Evidence     string     `gorm:"size:255"`
 	Status       uint8
 	Delisted     *bool `gorm:"default:false"`
 }

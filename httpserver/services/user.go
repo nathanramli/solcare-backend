@@ -232,7 +232,7 @@ func (svc *userSvc) FindKycRequestByUser(ctx context.Context, address string) *v
 
 	return views.SuccessResponse(http.StatusOK, views.M_OK, views.FindKycRequest{
 		Id:                      kycQueue.Id,
-		Nik:                     kycQueue.Nik,
+		Nik:                     kycQueue.Nin,
 		Name:                    kycQueue.Users.FirstName + kycQueue.Users.LastName,
 		UsersWalletAddress:      kycQueue.UsersWalletAddress,
 		RequestedAt:             kycQueue.RequestedAt.Unix(),
@@ -277,7 +277,7 @@ func (svc *userSvc) FindAllKycRequest(ctx context.Context, status int) *views.Re
 	for i, kycQueue := range kycQueues {
 		r := views.FindKycRequest{
 			Id:                      kycQueue.Id,
-			Nik:                     kycQueue.Nik,
+			Nik:                     kycQueue.Nin,
 			Name:                    kycQueue.Users.FirstName + kycQueue.Users.LastName,
 			UsersWalletAddress:      kycQueue.UsersWalletAddress,
 			RequestedAt:             kycQueue.RequestedAt.Unix(),
@@ -318,7 +318,7 @@ func (svc *userSvc) RequestKyc(ctx context.Context, address string, params *para
 		RequestedAt:        time.Now(),
 		UsersWalletAddress: user.WalletAddress,
 		Status:             models.KYC_STATUS_REQUESTED,
-		Nik:                params.Nik,
+		Nin:                params.Nik,
 	}
 
 	if recentKycQueue != nil {
