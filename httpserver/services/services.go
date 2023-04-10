@@ -40,6 +40,11 @@ type CategoriesSvc interface {
 	FindCategoryById(ctx context.Context, categoryId uint) *views.Response
 }
 
+type TransactionSvc interface {
+	CreateTransaction(ctx context.Context, userAddress string, params *params.CreateTransaction) *views.Response
+	FindAllTransactionsByUser(ctx context.Context, address string) *views.Response
+}
+
 type ReportSvc interface {
 	CreateReport(ctx context.Context, reporter string, params *params.CreateReport) *views.Response
 	FindReportById(ctx context.Context, id uint) *views.Response

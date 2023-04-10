@@ -36,6 +36,7 @@ func main() {
 	reportRepo := gorm.NewReportRepo(db)
 	kycQueueRepo := gorm.NewKyqQueueRepo(db)
 	adminRepo := gorm.NewAdminRepo(db)
+	transactionRepo := gorm.NewTransactionRepo(db)
 
 	userSvc := services.NewUserSvc(userRepo, kycQueueRepo, adminRepo)
 	userHandler := controllers.NewUserController(userSvc)
@@ -49,7 +50,10 @@ func main() {
 	reportSvc := services.NewReportSvc(reportRepo, campaignRepo, userRepo)
 	reportHandler := controllers.NewReportController(reportSvc)
 
-	app := httpserver.NewRouter(router, userHandler, campaignHandler, categoryHandler, reportHandler)
+	transactionSvc := services.NewTransactionSvc(transactionRepo, campaignRepo, userRepo)
+	transcationHandler := controllers.NewTransactionController(transactionSvc)
+
+	app := httpserver.NewRouter(router, userHandler, campaignHandler, categoryHandler, reportHandler, transcationHandler)
 	PORT := os.Getenv("PORT")
 	app.Start(":" + PORT)
 }

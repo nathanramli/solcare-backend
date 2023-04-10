@@ -12,19 +12,21 @@ import (
 type router struct {
 	router *gin.Engine
 
-	user     *controllers.UserController
-	campaign *controllers.CampaignController
-	category *controllers.CategoryController
-	report   *controllers.ReportController
+	user        *controllers.UserController
+	campaign    *controllers.CampaignController
+	category    *controllers.CategoryController
+	report      *controllers.ReportController
+	transaction *controllers.TransactionController
 }
 
-func NewRouter(r *gin.Engine, user *controllers.UserController, campaign *controllers.CampaignController, category *controllers.CategoryController, report *controllers.ReportController) *router {
+func NewRouter(r *gin.Engine, user *controllers.UserController, campaign *controllers.CampaignController, category *controllers.CategoryController, report *controllers.ReportController, transaction *controllers.TransactionController) *router {
 	return &router{
-		router:   r,
-		user:     user,
-		campaign: campaign,
-		category: category,
-		report:   report,
+		router:      r,
+		user:        user,
+		campaign:    campaign,
+		category:    category,
+		report:      report,
+		transaction: transaction,
 	}
 }
 
@@ -47,6 +49,9 @@ func (r *router) Start(port string) {
 	r.router.GET("/v1/report/:id", r.report.FindReportById)
 	r.router.GET("/v1/report/group", r.report.FindGroupedReports)
 	r.router.GET("/v1/report/group/:address", r.report.FindReportsByAddress)
+
+	r.router.GET("/v1/transaction/:address", r.transaction.FindAllTransactionsByUser)
+	r.router.POST("/v1/transaction", r.verifyToken, r.transaction.CreateTransaction)
 
 	r.router.GET("/v1/campaign/summary", r.campaign.FetchCampaignSummary)
 	r.router.POST("/v1/campaign", r.campaign.CreateCampaign)

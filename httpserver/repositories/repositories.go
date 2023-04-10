@@ -39,6 +39,11 @@ type CategoryRepo interface {
 	FindCategoryById(ctx context.Context, id uint) (*models.Categories, error)
 }
 
+type TransactionRepo interface {
+	SaveTransaction(ctx context.Context, transaction *models.Transaction) error
+	FindAllTransactionsByUser(ctx context.Context, address string) ([]models.Transaction, error)
+}
+
 type ReportRepo interface {
 	SaveReport(ctx context.Context, report *models.Reports) error
 	FindReportById(ctx context.Context, id uint) (*models.Reports, error)
