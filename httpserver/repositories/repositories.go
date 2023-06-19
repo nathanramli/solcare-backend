@@ -27,6 +27,7 @@ type CampaignRepo interface {
 	CountTotalCampaigns(ctx context.Context) (int64, error)
 	CountTotalSuccessCampaigns(ctx context.Context) (int64, error)
 	CountTotalFailedCampaigns(ctx context.Context) (int64, error)
+	CountTotalDelistedCampaigns(ctx context.Context) (int64, error)
 }
 
 type ProposalRepo interface {

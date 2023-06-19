@@ -347,10 +347,16 @@ func (svc *campaignSvc) FetchCampaignSummary(ctx context.Context) *views.Respons
 		return views.ErrorResponse(http.StatusInternalServerError, views.M_INTERNAL_SERVER_ERROR, err)
 	}
 
+	totalDelistedCampaign, err := svc.repo.CountTotalDelistedCampaigns(ctx)
+	if err != nil {
+		return views.ErrorResponse(http.StatusInternalServerError, views.M_INTERNAL_SERVER_ERROR, err)
+	}
+
 	return views.SuccessResponse(http.StatusOK, views.M_OK, views.FetchCampaignSummary{
-		TotalCampaigns:        totalCampaign,
-		TotalSuccessCampaigns: totalSuccessCampaign,
-		TotalFailedCampaigns:  totalFailedCampaign,
+		TotalCampaigns:         totalCampaign,
+		TotalSuccessCampaigns:  totalSuccessCampaign,
+		TotalFailedCampaigns:   totalFailedCampaign,
+		TotalDelistedCampaigns: totalDelistedCampaign,
 	})
 }
 

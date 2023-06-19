@@ -74,3 +74,9 @@ func (r *campaignRepo) CountTotalFailedCampaigns(ctx context.Context) (int64, er
 	err := r.db.WithContext(ctx).Model(&models.Campaign{}).Where("status = ?", models.EVIDENCE_STATUS_FAILED).Count(&total).Error
 	return total, err
 }
+
+func (r *campaignRepo) CountTotalDelistedCampaigns(ctx context.Context) (int64, error) {
+	var total int64
+	err := r.db.WithContext(ctx).Model(&models.Campaign{}).Where("delisted = true").Count(&total).Error
+	return total, err
+}

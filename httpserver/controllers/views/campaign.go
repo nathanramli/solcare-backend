@@ -21,7 +21,8 @@ type FindAllCampaignsWithEvidence struct {
 }
 
 type FetchCampaignSummary struct {
-	TotalCampaigns        int64 `json:"totalCampaigns"`
-	TotalSuccessCampaigns int64 `json:"totalSuccessCampaigns"`
-	TotalFailedCampaigns  int64 `json:"totalFailedCampaigns"`
+	TotalCampaigns         int64 `json:"totalCampaigns"`
+	TotalSuccessCampaigns  int64 `json:"totalSuccessCampaigns"`
+	TotalFailedCampaigns   int64 `json:"totalFailedCampaigns"`
+	TotalDelistedCampaigns int64 `json:"totalDelistedCampaigns"`
 }
