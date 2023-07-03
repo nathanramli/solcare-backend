@@ -71,7 +71,7 @@ func (r *router) Start() {
 	r.router.DELETE("/v1/admins/kyc/:address", r.verifyAdminToken, r.user.RemoveKyc)
 	r.router.POST("/v1/admins/reports/verify", r.verifyAdminToken, r.report.VerifyReport)
 
-	r.router.Run(":80")
+	r.router.Run(":8000")
 }
 
 func (r *router) verifyToken(ctx *gin.Context) {

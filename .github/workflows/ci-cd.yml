@@ -45,4 +45,4 @@ jobs:
             docker rm solcare
             docker rmi nathanramli/solcare-backend:latest
             docker pull nathanramli/solcare-backend:latest
-            docker run -d --name solcare --env-file ~/env/prod.env -v "$(pwd)"/resources:/resources --network postgres -p 80:80 nathanramli/solcare-backend:latest
+            docker run -d --name solcare --env-file ~/env/prod.env -v "$(pwd)"/resources:/resources --network postgres -p 8000:8000 nathanramli/solcare-backend:latest
