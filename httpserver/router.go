@@ -1,17 +1,11 @@
 package httpserver
 
 import (
-	"context"
-	"github.com/gin-gonic/autotls"
-	"net/http"
-	"os"
-	"os/signal"
-	"strings"
-	"syscall"
-
 	"github.com/gin-gonic/gin"
 	"github.com/nathanramli/solcare-backend/common"
 	"github.com/nathanramli/solcare-backend/httpserver/controllers"
+	"net/http"
+	"strings"
 )
 
 type router struct {
@@ -36,14 +30,6 @@ func NewRouter(r *gin.Engine, user *controllers.UserController, campaign *contro
 }
 
 func (r *router) Start() {
-	// Create context that listens for the interrupt signal from the OS.
-	ctx, stop := signal.NotifyContext(
-		context.Background(),
-		syscall.SIGINT,
-		syscall.SIGTERM,
-	)
-	defer stop()
-
 	r.router.Use(cors)
 
 	r.router.Static("/resources/", "./resources")
@@ -85,9 +71,7 @@ func (r *router) Start() {
 	r.router.DELETE("/v1/admins/kyc/:address", r.verifyAdminToken, r.user.RemoveKyc)
 	r.router.POST("/v1/admins/reports/verify", r.verifyAdminToken, r.report.VerifyReport)
 
-	go r.router.Run(":80")
-	DOMAIN := os.Getenv("DOMAIN")
-	autotls.RunWithContext(ctx, r.router, DOMAIN)
+	r.router.Run(":80")
 }
 
 func (r *router) verifyToken(ctx *gin.Context) {
