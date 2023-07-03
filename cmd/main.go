@@ -1,9 +1,6 @@
 package main
 
 import (
-	"log"
-	"os"
-
 	"github.com/gin-gonic/gin"
 	"github.com/joho/godotenv"
 	"github.com/nathanramli/solcare-backend/config"
@@ -11,6 +8,7 @@ import (
 	"github.com/nathanramli/solcare-backend/httpserver/controllers"
 	"github.com/nathanramli/solcare-backend/httpserver/repositories/gorm"
 	"github.com/nathanramli/solcare-backend/httpserver/services"
+	"log"
 )
 
 func init() {
@@ -54,6 +52,5 @@ func main() {
 	transcationHandler := controllers.NewTransactionController(transactionSvc)
 
 	app := httpserver.NewRouter(router, userHandler, campaignHandler, categoryHandler, reportHandler, transcationHandler)
-	PORT := os.Getenv("PORT")
-	app.Start(":" + PORT)
+	app.Start()
 }
